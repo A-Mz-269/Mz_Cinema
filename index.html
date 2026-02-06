@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    
+    <title>Mz Cinema</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mz Cinema">
+    
+    <link rel="apple-touch-icon" href="https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
+    <link rel="icon" href="https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
+
+    <link rel="manifest" id="my-manifest">
+    <script>
+        // 1. DYNAMIC MANIFEST CONFIGURATION
+        const manifest = {
+            "name": "Mz Cinema",
+            "short_name": "Mz Cinema",
+            "start_url": "./index.html", // Updated to explicit relative path for GitHub Pages
+            "display": "standalone",
+            "background_color": "#000000",
+            "theme_color": "#000000",
+            "orientation": "portrait",
+            "icons": [{
+                "src": "https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg",
+                "sizes": "512x512",
+                "type": "image/jpeg"
+            }]
+        };
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        document.querySelector('#my-manifest').setAttribute('href', manifestURL);
+
+        // 2. SERVICE WORKER REGISTRATION (Required for PWA Install)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registered!', reg))
+                    .catch(err => console.log('SW failed', err));
+            });
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { 
+                        'brand': '#E50914', 
+                        'surface': '#000000', 
+                        'surface-light': '#1A1A1A',
+                        'glass': 'rgba(20, 20, 20, 0.90)'
+                    },
+                    fontFamily: { sans: ['Outfit', 'Noto Sans Arabic', 'sans-serif'] },
+                    screens: { 'xs': '375px' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; background-color: #000; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .touch-action-pan-y { touch-action: pan-y; }
+        img { transition: opacity 0.3s ease-in-out; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .loader { width: 30px; height: 30px; border: 3px solid #333; border-top-color: #E50914; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .rtl { direction: rtl; }
+        .skeleton { background: linear-gradient(90deg, #1A1A1A 25%, #2A2A2A 50%, #1A1A1A 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .slide { opacity: 0; transition: opacity 0.8s ease-in-out; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+        .slide.active { opacity: 1; z-index: 10; pointer-events: auto; }
+        .slider-dot { transition: all 0.3s ease; }
+        .slider-dot.active { background-color: #E50914; width: 24px; }
+        /* Safe area padding for iPhones with notch */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="bg-surface text-white font-sans antialiased overflow-x-hidden mb-20 md:mb-0">
+
+    <nav class="md:hidden fixed top-0 w-full z-40 bg-gradient-to-b from-black/90 to-transparent px-4 py-4 flex justify-between items-center transition-all duration-300 pt-[calc(1rem+env(safe-area-inset-top))]" id="mobile-nav">
+        <div class="text-xl font-black text-brand tracking-tighter shadow-lg">Mz <span class="text-white">cinema</span></div>
+        <div class="flex gap-2">
+            <button onclick="app.router.go('watchlist')" class="p-2 bg-white/10 rounded-full backdrop-blur-md">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            </button>
+            <button onclick="app.ui.toggleSearch()" class="p-2 bg-white/10 rounded-full backdrop-blur-md">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <aside class="hidden md:flex fixed inset-y-0 left-0 w-64 bg-surface-light border-r border-white/5 flex-col p-6 z-50">
+        <div class="text-3xl font-black text-brand mb-10">Mz <span class="text-white">cinema</span></div>
+        <div class="space-y-2 flex-1">
+            <button onclick="app.router.go('home')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="home">Home</button>
+            <button onclick="app.router.go('movies')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="movies">Movies</button>
+            <button onclick="app.router.go('tv')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="tv">Series</button>
+            <button onclick="app.router.go('watchlist')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="watchlist">My List</button>
+        </div>
+        <button onclick="app.settings.toggleLang()" class="mt-auto px-4 py-3 rounded-xl bg-white/5 flex justify-between items-center text-sm font-medium">
+            <span id="desktop-lang-label">English</span>
+            <span class="text-brand">Switch</span>
+        </button>
+    </aside>
+
+    <main id="main-view" class="md:ml-64 min-h-screen pb-24 md:pb-0">
+        <div id="search-overlay" class="fixed inset-0 bg-black/95 z-[60] hidden flex-col pt-4 px-4 pt-[calc(1rem+env(safe-area-inset-top))]">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="relative flex-1">
+                    <input type="text" id="searchInput" placeholder="Search movies, shows..." class="w-full bg-white/10 border border-white/10 rounded-xl px-12 py-3.5 focus:outline-none focus:border-brand text-white placeholder-gray-500">
+                </div>
+                <button onclick="app.ui.toggleSearch()" class="text-white font-medium p-2">Cancel</button>
+            </div>
+            <div id="search-results" class="flex-1 overflow-y-auto grid grid-cols-2 gap-4 pb-20"></div>
+        </div>
+        <div id="view-container"></div>
+    </main>
+
+    <div class="md:hidden fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-xl border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe">
+        <button onclick="app.router.go('home')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="home"><span class="text-[10px] font-medium">Home</span></button>
+        <button onclick="app.router.go('movies')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="movies"><span class="text-[10px] font-medium">Movies</span></button>
+        <button onclick="app.router.go('tv')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="tv"><span class="text-[10px] font-medium">Series</span></button>
+        <button onclick="app.router.go('watchlist')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="watchlist"><span class="text-[10px] font-medium">My List</span></button>
+    </div>
+
+    <div id="player-modal" class="fixed inset-0 bg-black z-[70] hidden overflow-y-auto transition-transform duration-300 translate-y-full">
+        <div class="sticky top-0 z-50 bg-black/90 backdrop-blur flex justify-between items-center p-4 border-b border-white/10 pt-[calc(1rem+env(safe-area-inset-top))]">
+            <h2 id="player-title" class="text-sm font-bold truncate max-w-[70%] text-gray-200"></h2>
+            <div class="flex gap-2">
+                <button id="add-watchlist-btn" class="p-2 bg-white/10 rounded-full text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
+                <button onclick="app.ui.closePlayer()" class="p-2 bg-white/10 rounded-full text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+        </div>
+
+        <div class="relative w-full pb-[56.25%] bg-black group">
+            <iframe id="video-frame" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe>
+            <div id="player-loader" class="absolute inset-0 flex items-center justify-center bg-surface z-10"><div class="loader"></div></div>
+        </div>
+
+        <div class="p-5 space-y-6 pb-24">
+            <div class="flex gap-2">
+                <button onclick="app.player.playTrailer()" class="flex-1 py-3 bg-white text-black rounded-xl font-bold flex items-center justify-center gap-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg> Trailer</button>
+                <button onclick="app.player.download()" class="flex-1 py-3 bg-white/10 text-white rounded-xl font-bold flex items-center justify-center gap-2">Download</button>
+            </div>
+
+            <div id="tv-selectors" class="hidden space-y-3 p-4 bg-white/5 rounded-xl border border-white/10">
+                <select id="season-select" class="bg-black border border-white/20 rounded-lg p-2.5 text-sm w-full outline-none text-white"></select>
+                <select id="episode-select" class="bg-black border border-white/20 rounded-lg p-2.5 text-sm w-full outline-none text-white"></select>
+                <div class="flex gap-2">
+                    <button id="prev-ep" class="flex-1 py-2 bg-white/5 rounded-lg text-xs font-bold disabled:opacity-30">Previous</button>
+                    <button id="next-ep" class="flex-1 py-2 bg-white/5 rounded-lg text-xs font-bold disabled:opacity-30">Next Episode</button>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-400 uppercase font-bold mb-2">Sources</p>
+                <div class="flex flex-wrap gap-2" id="server-list"></div>
+            </div>
+
+            <div id="cast-section" class="space-y-3">
+                <h3 class="text-sm font-bold uppercase text-gray-400">Cast</h3>
+                <div id="cast-list" class="flex gap-3 overflow-x-auto pb-2"></div>
+            </div>
+
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <span id="meta-year" class="text-xs font-bold px-2 py-0.5 bg-white/10 rounded"></span>
+                    <span id="meta-rating" class="text-xs font-bold text-yellow-500">★ <span></span></span>
+                    <span id="meta-runtime" class="text-xs font-bold text-gray-400"></span>
+                </div>
+                <p id="meta-overview" class="text-gray-400 text-sm leading-relaxed"></p>
+            </div>
+            <div id="similar-grid" class="grid grid-cols-3 gap-3"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '290474c6946149a9f13fc82b72ec5274';
+        const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+        const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
+        
+        // MODIFIED SERVER LIST WITH ANIME/EXTRA SERVERS
+        const SERVERS = [
+            { name: "VidSrc 1", url: "https://vidsrc.xyz/embed/movie/{id}", tv: "https://vidsrc.xyz/embed/tv/{id}/{s}/{e}" },
+            { name: "VidSrc 2", url: "https://vidsrc.to/embed/movie/{id}", tv: "https://vidsrc.to/embed/tv/{id}/{s}/{e}" },
+            { name: "VidSrc (VIP)", url: "https://vidsrc.vip/embed/movie/{id}", tv: "https://vidsrc.vip/embed/tv/{id}/{s}/{e}" },
+            { name: "VidLink", url: "https://vidlink.pro/movie/{id}", tv: "https://vidlink.pro/tv/{id}/{s}/{e}" },
+            { name: "SuperEmbed", url: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", tv: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&s={s}&e={e}" }
+        ];
+
+        const GENRES = [
+            {id: 28, name: "Action"}, {id: 35, name: "Comedy"}, {id: 18, name: "Drama"}, 
+            {id: 27, name: "Horror"}, {id: 10749, name: "Romance"}, {id: 878, name: "Sci-Fi"}
+        ];
+
+        const app = {
+            state: { 
+                currentData: null, 
+                lang: localStorage.getItem('lang') || 'en',
+                watchlist: JSON.parse(localStorage.getItem('watchlist') || '[]'),
+                history: JSON.parse(localStorage.getItem('history') || '[]')
+            },
+
+            init: () => {
+                if(app.state.lang === 'ar') document.body.classList.add('rtl');
+                app.router.go('home');
+                let timeout;
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => app.ui.performSearch(e.target.value), 500);
+                });
+            },
+
+            // SLIDER FEATURE IMPLEMENTATION
+            slider: {
+                timer: null,
+                index: 0,
+                items: [],
+                
+                init: (items) => {
+                    app.slider.items = items;
+                    app.slider.index = 0;
+                    app.slider.startAuto();
+                    return app.slider.renderHTML();
+                },
+
+                renderHTML: () => {
+                    const slides = app.slider.items.map((item, i) => `
+                        <div class="slide ${i === 0 ? 'active' : ''}" id="slide-${i}">
+                            <img src="${IMG_ORIGINAL}${item.backdrop_path || item.poster_path}" class="w-full h-full object-cover opacity-60">
+                            <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 w-full p-6 pb-12 md:pb-6 z-20 pointer-events-none">
+                                <h1 class="text-3xl md:text-5xl font-black mb-2 leading-tight drop-shadow-lg max-w-xl text-white">${item.title || item.name}</h1>
+                                <div class="flex items-center gap-3 mb-4 text-sm font-medium">
+                                    <span class="text-brand font-bold">${(item.vote_average || 0).toFixed(1)} ★</span>
+                                    <span class="text-gray-300">${(item.release_date || item.first_air_date || '').split('-')[0]}</span>
+                                </div>
+                                <button onclick="app.player.open(${item.id}, '${item.media_type}')" class="bg-brand hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-red-900/20 transform active:scale-95 transition pointer-events-auto">Watch Now</button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    const dots = app.slider.items.map((_, i) => `
+                        <button onclick="app.slider.goTo(${i})" class="slider-dot w-2 h-2 rounded-full bg-white/50 hover:bg-white ${i === 0 ? 'active' : ''}" id="dot-${i}"></button>
+                    `).join('');
+
+                    return `
+                        <div class="relative w-full h-[65vh] overflow-hidden bg-surface-light group" 
+                             ontouchstart="app.slider.stop()" 
+                             ontouchend="app.slider.startAuto()"
+                             onmouseenter="app.slider.stop()"
+                             onmouseleave="app.slider.startAuto()">
+                             
+                            <div id="slider-track" class="w-full h-full relative">
+                                ${slides}
+                            </div>
+                            
+                            <button onclick="app.slider.prev()" class="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 hover:bg-brand/80 backdrop-blur-sm rounded-full text-white md:opacity-0 md:group-hover:opacity-100 transition duration-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+                            <button onclick="app.slider.next()" class="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 hover:bg-brand/80 backdrop-blur-sm rounded-full text-white md:opacity-0 md:group-hover:opacity-100 transition duration-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+
+                            <div class="absolute bottom-4 right-0 left-0 flex justify-center gap-2 z-30">
+                                ${dots}
+                            </div>
+                        </div>
+                    `;
+                },
+
+                updateClasses: () => {
+                    // Update Slides
+                    document.querySelectorAll('.slide').forEach((el, i) => {
+                        if(i === app.slider.index) el.classList.add('active');
+                        else el.classList.remove('active');
+                    });
+                    // Update Dots
+                    document.querySelectorAll('.slider-dot').forEach((el, i) => {
+                        if(i === app.slider.index) el.classList.add('active');
+                        else el.classList.remove('active');
+                    });
+                },
+
+                next: () => {
+                    app.slider.index = (app.slider.index + 1) % app.slider.items.length;
+                    app.slider.updateClasses();
+                },
+
+                prev: () => {
+                    app.slider.index = (app.slider.index - 1 + app.slider.items.length) % app.slider.items.length;
+                    app.slider.updateClasses();
+                },
+
+                goTo: (i) => {
+                    app.slider.index = i;
+                    app.slider.updateClasses();
+                },
+
+                startAuto: () => {
+                    if (app.slider.timer) clearInterval(app.slider.timer);
+                    app.slider.timer = setInterval(() => {
+                        app.slider.index = (app.slider.index + 1) % app.slider.items.length;
+                        app.slider.updateClasses();
+                    }, 5000); // 5 Seconds slide
+                },
+
+                resetTimer: () => {
+                    clearInterval(app.slider.timer);
+                    app.slider.startAuto();
+                },
+                
+                stop: () => {
+                    if (app.slider.timer) clearInterval(app.slider.timer);
+                }
+            },
+
+            router: {
+                go: async (view, param) => {
+                    app.slider.stop(); // Stop slider when leaving home
+                    document.querySelectorAll('.nav-item, .nav-btn').forEach(el => {
+                        el.classList.toggle('text-brand', el.dataset.target === view);
+                    });
+                    const container = document.getElementById('view-container');
+                    window.scrollTo(0,0);
+                    
+                    if(view === 'home') {
+                        container.innerHTML = '<div class="h-96 flex items-center justify-center"><div class="loader"></div></div>';
+                        const [trending, kdrama, hindi, anime, movies, turkish, arabic, hollywood] = await Promise.all([
+                            app.api.fetch(`trending/all/day?`),
+                            app.api.fetch(`discover/tv?with_original_language=ko&`),
+                            app.api.fetch(`discover/movie?with_original_language=hi&`),
+                            app.api.fetch(`discover/tv?with_genres=16&`),
+                            app.api.fetch(`movie/now_playing?`),
+                            app.api.fetch(`discover/movie?with_original_language=tr&`),
+                            app.api.fetch(`discover/movie?with_original_language=ar&`),
+                            app.api.fetch(`discover/movie?with_original_language=en&`)
+                        ]);
+                        app.ui.renderHome({
+                            trending: trending.results, 
+                            kdrama: kdrama.results, 
+                            hindi: hindi.results, 
+                            anime: anime.results, 
+                            movies: movies.results,
+                            turkish: turkish.results,
+                            arabic: arabic.results,
+                            hollywood: hollywood.results
+                        });
+                    } else if(view === 'watchlist') {
+                        app.ui.renderWatchlist();
+                    } else if(view === 'person') {
+                        app.ui.closePlayer();
+                        container.innerHTML = '<div class="h-96 flex items-center justify-center"><div class="loader"></div></div>';
+                        const [person, credits] = await Promise.all([
+                            app.api.fetch(`person/${param}?`),
+                            app.api.fetch(`person/${param}/combined_credits?`)
+                        ]);
+                        
+                        const works = credits.cast.sort((a,b) => b.popularity - a.popularity);
+                        
+                        container.innerHTML = `
+                            <div class="pt-24 px-4 pb-10">
+                                <div class="flex flex-col md:flex-row gap-6 mb-8">
+                                    <div class="w-32 h-32 md:w-40 md:h-40 flex-none rounded-full overflow-hidden border-2 border-brand mx-auto md:mx-0">
+                                        <img src="${IMG_BASE}${person.profile_path}" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="text-center md:text-left">
+                                        <h1 class="text-3xl font-black mb-2">${person.name}</h1>
+                                        <p class="text-gray-400 text-sm line-clamp-2 max-w-xl">${person.biography || 'No biography available.'}</p>
+                                        <div class="mt-4 text-sm text-gray-500">Known for: ${person.known_for_department} • Born: ${person.birthday || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-bold mb-4 border-l-4 border-brand pl-3">Filmography</h3>
+                                <div class="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                    ${works.map(i => app.ui.createCard(i, 'w-full')).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        app.ui.renderFilterGrid(view === 'movies' ? 'Movies' : 'Series', view === 'movies' ? 'movie' : 'tv');
+                    }
+                }
+            },
+
+            api: {
+                fetch: async (endpoint) => {
+                    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}api_key=${API_KEY}&language=${app.state.lang}`);
+                    return await res.json();
+                },
+                details: async (id, type) => {
+                    const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=${app.state.lang}&append_to_response=similar,recommendations,credits,videos`);
+                    return await res.json();
+                }
+            },
+
+            ui: {
+                renderHome: (data) => {
+                    const sliderHTML = app.slider.init(data.trending.slice(0, 6));
+                    const sections = [
+                        { title: "Continue Watching", items: app.state.history, isHistory: true },
+                        { title: "Trending Now", items: data.trending.slice(1) },
+                        { title: "New Movies", items: data.movies },
+                        { title: "Hollywood Hits", items: data.hollywood },
+                        { title: "Turkish Cinema", items: data.turkish },
+                        { title: "Arabic Cinema", items: data.arabic },
+                        { title: "K-Dramas", items: data.kdrama },
+                        { title: "Bollywood", items: data.hindi },
+                        { title: "Anime", items: data.anime }
+                    ];
+
+                    document.getElementById('view-container').innerHTML = `
+                        ${sliderHTML}
+                        <div class="space-y-8 p-4 -mt-6 relative z-10">
+                            ${sections.map(sec => (sec.items && sec.items.length > 0) ? `
+                                <div>
+                                    <h3 class="text-lg font-bold mb-3 border-l-4 border-brand pl-3 shadow-sm">${sec.title}</h3>
+                                    <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                                        ${sec.items.map(i => app.ui.createCard(i, 'w-36', sec.isHistory)).join('')}
+                                    </div>
+                                </div>
+                            ` : '').join('')}
+                        </div>
+                    `;
+                },
+
+                renderFilterGrid: async (title, type) => {
+                    const container = document.getElementById('view-container');
+                    container.innerHTML = `
+                        <div class="pt-20 px-4">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-bold">${title}</h2>
+                                <select onchange="app.ui.applyFilter('${type}', this.value)" class="bg-white/10 border-none rounded-lg text-xs px-3 py-2 outline-none">
+                                    <option value="">All Genres</option>
+                                    ${GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div id="grid-content" class="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                        </div>
+                    `;
+                    app.ui.applyFilter(type, '');
+                },
+
+                applyFilter: async (type, genreId) => {
+                    const grid = document.getElementById('grid-content');
+                    grid.innerHTML = Array(12).fill('<div class="aspect-[2/3] rounded-xl skeleton"></div>').join('');
+                    const endpoint = genreId ? `discover/${type}?with_genres=${genreId}&` : `${type}/popular?`;
+                    const data = await app.api.fetch(endpoint);
+                    grid.innerHTML = data.results.map(i => app.ui.createCard(i, 'w-full')).join('');
+                },
+
+                renderWatchlist: () => {
+                    const container = document.getElementById('view-container');
+                    container.innerHTML = `
+                        <div class="pt-24 px-4">
+                            <h2 class="text-2xl font-bold mb-6">My List</h2>
+                            ${app.state.watchlist.length ? `
+                                <div class="grid grid-cols-2 xs:grid-cols-3 gap-4">
+                                    ${app.state.watchlist.map(i => app.ui.createCard(i, 'w-full')).join('')}
+                                </div>
+                            ` : `<p class="text-gray-500 text-center mt-20">Your watchlist is empty.</p>`}
+                        </div>
+                    `;
+                },
+
+                createCard: (item, width = 'w-36', isHistory = false) => `
+                    <div onclick="app.player.open(${item.id}, '${item.media_type || (item.title ? 'movie' : 'tv')}')" class="flex-none ${width} relative group cursor-pointer">
+                        <div class="aspect-[2/3] rounded-xl overflow-hidden bg-white/5 mb-2 relative">
+                            <img src="${item.poster_path ? IMG_BASE + item.poster_path : 'https://via.placeholder.com/300x450/111/fff?text=No+Image'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
+                            ${isHistory ? `<div class="absolute bottom-0 left-0 h-1 bg-brand w-3/4"></div>` : ''}
+                        </div>
+                        <h4 class="text-sm font-medium truncate">${item.title || item.name}</h4>
+                        ${item.vote_average ? `<span class="text-[10px] text-yellow-500 font-bold">★ ${item.vote_average.toFixed(1)}</span>` : ''}
+                    </div>
+                `,
+
+                toggleSearch: () => document.getElementById('search-overlay').classList.toggle('hidden'),
+
+                performSearch: async (q) => {
+                    if(!q) return;
+                    const res = await app.api.fetch(`search/multi?query=${q}&`);
+                    document.getElementById('search-results').innerHTML = res.results.filter(i => i.poster_path).map(i => app.ui.createCard(i, 'w-full')).join('');
+                },
+
+                closePlayer: () => {
+                    const modal = document.getElementById('player-modal');
+                    modal.classList.add('translate-y-full');
+                    setTimeout(() => { modal.classList.add('hidden'); document.getElementById('video-frame').src = ''; }, 300);
+                }
+            },
+
+            player: {
+                open: async (id, type) => {
+                    app.slider.stop(); // Stop slider while watching
+                    const modal = document.getElementById('player-modal');
+                    modal.classList.remove('hidden');
+                    setTimeout(() => modal.classList.remove('translate-y-full'), 10);
+                    
+                    const data = await app.api.details(id, type);
+                    app.state.currentData = { ...data, media_type: type };
+                    
+                    document.getElementById('player-title').textContent = data.title || data.name;
+                    document.getElementById('meta-overview').textContent = data.overview;
+                    document.getElementById('meta-year').textContent = (data.release_date || data.first_air_date || '').substring(0,4);
+                    document.getElementById('meta-rating').querySelector('span').textContent = data.vote_average.toFixed(1);
+                    document.getElementById('meta-runtime').textContent = data.runtime ? `${data.runtime}m` : (data.episode_run_time ? `${data.episode_run_time[0]}m` : '');
+
+                    // Cast & Crew
+                    document.getElementById('cast-list').innerHTML = data.credits.cast.slice(0, 10).map(c => `
+                        <button onclick="app.router.go('person', ${c.id})" class="flex-none w-16 text-center group">
+                            <img src="${c.profile_path ? IMG_BASE + c.profile_path : 'https://via.placeholder.com/50x50/111/fff?text=?'}" class="w-12 h-12 rounded-full object-cover mx-auto bg-white/10 group-hover:border-2 border-brand transition-all">
+                            <p class="text-[9px] mt-1 truncate text-gray-400 group-hover:text-white">${c.name}</p>
+                        </button>
+                    `).join('');
+
+                    // Watchlist Toggle
+                    const watchBtn = document.getElementById('add-watchlist-btn');
+                    const inWatchlist = app.state.watchlist.some(i => i.id === id);
+                    watchBtn.innerHTML = inWatchlist ? `<svg class="w-5 h-5 text-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>` : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>`;
+                    watchBtn.onclick = () => app.player.toggleWatchlist(data);
+
+                    // History tracking
+                    app.player.addToHistory(data);
+
+                    document.getElementById('server-list').innerHTML = SERVERS.map((s, idx) => `
+                        <button onclick="app.player.play(${idx})" class="srv-btn px-4 py-2 rounded-lg bg-white/5 text-xs font-bold transition hover:bg-white/10">
+                            ${s.name}
+                        </button>
+                    `).join('');
+
+                    if(type === 'tv') {
+                        document.getElementById('tv-selectors').classList.remove('hidden');
+                        const sSelect = document.getElementById('season-select');
+                        sSelect.innerHTML = data.seasons.filter(s => s.season_number > 0).map(s => `<option value="${s.season_number}">Season ${s.season_number}</option>`).join('');
+                        sSelect.onchange = async () => {
+                            const sData = await app.api.fetch(`tv/${id}/season/${sSelect.value}?`);
+                            const eSelect = document.getElementById('episode-select');
+                            eSelect.innerHTML = sData.episodes.map(e => `<option value="${e.episode_number}">Ep ${e.episode_number}: ${e.name}</option>`).join('');
+                            eSelect.onchange = () => app.player.play(0);
+                            app.player.play(0);
+                        };
+                        sSelect.dispatchEvent(new Event('change'));
+                    } else {
+                        document.getElementById('tv-selectors').classList.add('hidden');
+                        app.player.play(0);
+                    }
+                    
+                    document.getElementById('similar-grid').innerHTML = data.similar.results.slice(0, 6).map(i => app.ui.createCard(i, 'w-full')).join('');
+                },
+
+                play: (idx) => {
+                    document.querySelectorAll('.srv-btn').forEach((b, i) => b.classList.toggle('bg-brand', i === idx));
+                    const data = app.state.currentData;
+                    const s = document.getElementById('season-select').value || 1;
+                    const e = document.getElementById('episode-select').value || 1;
+                    let url = data.media_type === 'movie' ? SERVERS[idx].url : SERVERS[idx].tv;
+                    url = url.replace('{id}', data.id).replace('{s}', s).replace('{e}', e);
+                    
+                    document.getElementById('player-loader').classList.remove('hidden');
+                    const frame = document.getElementById('video-frame');
+                    frame.src = url;
+                    frame.onload = () => document.getElementById('player-loader').classList.add('hidden');
+                },
+
+                playTrailer: () => {
+                    const video = app.state.currentData.videos.results.find(v => v.type === 'Trailer') || app.state.currentData.videos.results[0];
+                    if(video) window.open(`https://youtube.com/watch?v=${video.key}`, '_blank');
+                },
+
+                toggleWatchlist: (item) => {
+                    const idx = app.state.watchlist.findIndex(i => i.id === item.id);
+                    if(idx > -1) app.state.watchlist.splice(idx, 1);
+                    else app.state.watchlist.unshift(item);
+                    localStorage.setItem('watchlist', JSON.stringify(app.state.watchlist));
+                    app.player.open(item.id, item.media_type || (item.title ? 'movie' : 'tv'));
+                },
+
+                addToHistory: (item) => {
+                    if(item.adult) return;
+                    app.state.history = app.state.history.filter(i => i.id !== item.id);
+                    app.state.history.unshift(item);
+                    if(app.state.history.length > 20) app.state.history.pop();
+                    localStorage.setItem('history', JSON.stringify(app.state.history));
+                },
+
+                download: () => {
+                    const data = app.state.currentData;
+                    const q = `${data.title || data.name} download index of`;
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+                }
+            },
+
+            settings: {
+                toggleLang: () => {
+                    localStorage.setItem('lang', app.state.lang === 'en' ? 'ar' : 'en');
+                    location.reload();
+                }
+            }
+        };
+
+        app.init();
+    </script>
+</body>
+</html>
