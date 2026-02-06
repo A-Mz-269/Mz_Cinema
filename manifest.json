@@ -1,0 +1,16 @@
+{
+  "name": "Mz Cinema",
+  "short_name": "Mz Cinema",
+  "start_url": "/Mz_Cinema/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://image.tmdb.org/t/p/w500/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg",
+      "sizes": "500x500",
+      "type": "image/jpeg"
+    }
+  ]
+}
