@@ -11,40 +11,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Mz Cinema">
     
-    <link rel="apple-touch-icon" href="https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
-    <link rel="icon" href="https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
+    <link rel="apple-touch-icon" href="https://image.tmdb.org/t/p/w500/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
+    <link rel="icon" href="https://image.tmdb.org/t/p/w500/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
+    <link rel="manifest" href="manifest.json">
 
-    <link rel="manifest" id="my-manifest">
     <script>
-        // 1. DYNAMIC MANIFEST CONFIGURATION
-        const manifest = {
-            "name": "Mz Cinema",
-            "short_name": "Mz Cinema",
-            "start_url": "./index.html", // Updated to explicit relative path for GitHub Pages
-            "display": "standalone",
-            "background_color": "#000000",
-            "theme_color": "#000000",
-            "orientation": "portrait",
-            "icons": [{
-                "src": "https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg",
-                "sizes": "512x512",
-                "type": "image/jpeg"
-            }]
-        };
-        const stringManifest = JSON.stringify(manifest);
-        const blob = new Blob([stringManifest], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
-        document.querySelector('#my-manifest').setAttribute('href', manifestURL);
-
-        // 2. SERVICE WORKER REGISTRATION (Required for PWA Install)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW registered!', reg))
-                    .catch(err => console.log('SW failed', err));
+                    .then(reg => console.log('App Ready'))
+                    .catch(err => console.log('Registration Failed', err));
             });
         }
     </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
     <script>
@@ -79,7 +59,6 @@
         .slide.active { opacity: 1; z-index: 10; pointer-events: auto; }
         .slider-dot { transition: all 0.3s ease; }
         .slider-dot.active { background-color: #E50914; width: 24px; }
-        /* Safe area padding for iPhones with notch */
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
@@ -187,7 +166,6 @@
         const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
         const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
         
-        // MODIFIED SERVER LIST WITH ANIME/EXTRA SERVERS
         const SERVERS = [
             { name: "VidSrc 1", url: "https://vidsrc.xyz/embed/movie/{id}", tv: "https://vidsrc.xyz/embed/tv/{id}/{s}/{e}" },
             { name: "VidSrc 2", url: "https://vidsrc.to/embed/movie/{id}", tv: "https://vidsrc.to/embed/tv/{id}/{s}/{e}" },
@@ -219,19 +197,16 @@
                 });
             },
 
-            // SLIDER FEATURE IMPLEMENTATION
             slider: {
                 timer: null,
                 index: 0,
                 items: [],
-                
                 init: (items) => {
                     app.slider.items = items;
                     app.slider.index = 0;
                     app.slider.startAuto();
                     return app.slider.renderHTML();
                 },
-
                 renderHTML: () => {
                     const slides = app.slider.items.map((item, i) => `
                         <div class="slide ${i === 0 ? 'active' : ''}" id="slide-${i}">
@@ -243,7 +218,7 @@
                                     <span class="text-brand font-bold">${(item.vote_average || 0).toFixed(1)} ★</span>
                                     <span class="text-gray-300">${(item.release_date || item.first_air_date || '').split('-')[0]}</span>
                                 </div>
-                                <button onclick="app.player.open(${item.id}, '${item.media_type}')" class="bg-brand hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-red-900/20 transform active:scale-95 transition pointer-events-auto">Watch Now</button>
+                                <button onclick="app.player.open(${item.id}, '${item.media_type || (item.title ? 'movie' : 'tv')}')" class="bg-brand hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-red-900/20 transform active:scale-95 transition pointer-events-auto">Watch Now</button>
                             </div>
                         </div>
                     `).join('');
@@ -253,82 +228,31 @@
                     `).join('');
 
                     return `
-                        <div class="relative w-full h-[65vh] overflow-hidden bg-surface-light group" 
-                             ontouchstart="app.slider.stop()" 
-                             ontouchend="app.slider.startAuto()"
-                             onmouseenter="app.slider.stop()"
-                             onmouseleave="app.slider.startAuto()">
-                             
-                            <div id="slider-track" class="w-full h-full relative">
-                                ${slides}
-                            </div>
-                            
-                            <button onclick="app.slider.prev()" class="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 hover:bg-brand/80 backdrop-blur-sm rounded-full text-white md:opacity-0 md:group-hover:opacity-100 transition duration-300">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                            </button>
-                            <button onclick="app.slider.next()" class="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 bg-black/30 hover:bg-brand/80 backdrop-blur-sm rounded-full text-white md:opacity-0 md:group-hover:opacity-100 transition duration-300">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                            </button>
-
-                            <div class="absolute bottom-4 right-0 left-0 flex justify-center gap-2 z-30">
-                                ${dots}
-                            </div>
+                        <div class="relative w-full h-[65vh] overflow-hidden bg-surface-light group">
+                            <div id="slider-track" class="w-full h-full relative">${slides}</div>
+                            <div class="absolute bottom-4 right-0 left-0 flex justify-center gap-2 z-30">${dots}</div>
                         </div>
                     `;
                 },
-
                 updateClasses: () => {
-                    // Update Slides
-                    document.querySelectorAll('.slide').forEach((el, i) => {
-                        if(i === app.slider.index) el.classList.add('active');
-                        else el.classList.remove('active');
-                    });
-                    // Update Dots
-                    document.querySelectorAll('.slider-dot').forEach((el, i) => {
-                        if(i === app.slider.index) el.classList.add('active');
-                        else el.classList.remove('active');
-                    });
+                    document.querySelectorAll('.slide').forEach((el, i) => el.classList.toggle('active', i === app.slider.index));
+                    document.querySelectorAll('.slider-dot').forEach((el, i) => el.classList.toggle('active', i === app.slider.index));
                 },
-
-                next: () => {
-                    app.slider.index = (app.slider.index + 1) % app.slider.items.length;
-                    app.slider.updateClasses();
-                },
-
-                prev: () => {
-                    app.slider.index = (app.slider.index - 1 + app.slider.items.length) % app.slider.items.length;
-                    app.slider.updateClasses();
-                },
-
-                goTo: (i) => {
-                    app.slider.index = i;
-                    app.slider.updateClasses();
-                },
-
                 startAuto: () => {
-                    if (app.slider.timer) clearInterval(app.slider.timer);
+                    clearInterval(app.slider.timer);
                     app.slider.timer = setInterval(() => {
                         app.slider.index = (app.slider.index + 1) % app.slider.items.length;
                         app.slider.updateClasses();
-                    }, 5000); // 5 Seconds slide
+                    }, 5000);
                 },
-
-                resetTimer: () => {
-                    clearInterval(app.slider.timer);
-                    app.slider.startAuto();
-                },
-                
-                stop: () => {
-                    if (app.slider.timer) clearInterval(app.slider.timer);
-                }
+                stop: () => clearInterval(app.slider.timer),
+                goTo: (i) => { app.slider.index = i; app.slider.updateClasses(); }
             },
 
             router: {
                 go: async (view, param) => {
-                    app.slider.stop(); // Stop slider when leaving home
-                    document.querySelectorAll('.nav-item, .nav-btn').forEach(el => {
-                        el.classList.toggle('text-brand', el.dataset.target === view);
-                    });
+                    app.slider.stop();
+                    document.querySelectorAll('.nav-item, .nav-btn').forEach(el => el.classList.toggle('text-brand', el.dataset.target === view));
                     const container = document.getElementById('view-container');
                     window.scrollTo(0,0);
                     
@@ -363,9 +287,7 @@
                             app.api.fetch(`person/${param}?`),
                             app.api.fetch(`person/${param}/combined_credits?`)
                         ]);
-                        
                         const works = credits.cast.sort((a,b) => b.popularity - a.popularity);
-                        
                         container.innerHTML = `
                             <div class="pt-24 px-4 pb-10">
                                 <div class="flex flex-col md:flex-row gap-6 mb-8">
@@ -375,7 +297,6 @@
                                     <div class="text-center md:text-left">
                                         <h1 class="text-3xl font-black mb-2">${person.name}</h1>
                                         <p class="text-gray-400 text-sm line-clamp-2 max-w-xl">${person.biography || 'No biography available.'}</p>
-                                        <div class="mt-4 text-sm text-gray-500">Known for: ${person.known_for_department} • Born: ${person.birthday || 'N/A'}</div>
                                     </div>
                                 </div>
                                 <h3 class="text-xl font-bold mb-4 border-l-4 border-brand pl-3">Filmography</h3>
@@ -421,7 +342,7 @@
                         <div class="space-y-8 p-4 -mt-6 relative z-10">
                             ${sections.map(sec => (sec.items && sec.items.length > 0) ? `
                                 <div>
-                                    <h3 class="text-lg font-bold mb-3 border-l-4 border-brand pl-3 shadow-sm">${sec.title}</h3>
+                                    <h3 class="text-lg font-bold mb-3 border-l-4 border-brand pl-3">${sec.title}</h3>
                                     <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
                                         ${sec.items.map(i => app.ui.createCard(i, 'w-36', sec.isHistory)).join('')}
                                     </div>
@@ -430,14 +351,13 @@
                         </div>
                     `;
                 },
-
                 renderFilterGrid: async (title, type) => {
                     const container = document.getElementById('view-container');
                     container.innerHTML = `
                         <div class="pt-20 px-4">
                             <div class="flex justify-between items-center mb-6">
                                 <h2 class="text-2xl font-bold">${title}</h2>
-                                <select onchange="app.ui.applyFilter('${type}', this.value)" class="bg-white/10 border-none rounded-lg text-xs px-3 py-2 outline-none">
+                                <select onchange="app.ui.applyFilter('${type}', this.value)" class="bg-white/10 border-none rounded-lg text-xs px-3 py-2 outline-none text-white">
                                     <option value="">All Genres</option>
                                     ${GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
                                 </select>
@@ -447,7 +367,6 @@
                     `;
                     app.ui.applyFilter(type, '');
                 },
-
                 applyFilter: async (type, genreId) => {
                     const grid = document.getElementById('grid-content');
                     grid.innerHTML = Array(12).fill('<div class="aspect-[2/3] rounded-xl skeleton"></div>').join('');
@@ -455,7 +374,6 @@
                     const data = await app.api.fetch(endpoint);
                     grid.innerHTML = data.results.map(i => app.ui.createCard(i, 'w-full')).join('');
                 },
-
                 renderWatchlist: () => {
                     const container = document.getElementById('view-container');
                     container.innerHTML = `
@@ -469,7 +387,6 @@
                         </div>
                     `;
                 },
-
                 createCard: (item, width = 'w-36', isHistory = false) => `
                     <div onclick="app.player.open(${item.id}, '${item.media_type || (item.title ? 'movie' : 'tv')}')" class="flex-none ${width} relative group cursor-pointer">
                         <div class="aspect-[2/3] rounded-xl overflow-hidden bg-white/5 mb-2 relative">
@@ -477,18 +394,15 @@
                             ${isHistory ? `<div class="absolute bottom-0 left-0 h-1 bg-brand w-3/4"></div>` : ''}
                         </div>
                         <h4 class="text-sm font-medium truncate">${item.title || item.name}</h4>
-                        ${item.vote_average ? `<span class="text-[10px] text-yellow-500 font-bold">★ ${item.vote_average.toFixed(1)}</span>` : ''}
+                        <span class="text-[10px] text-yellow-500 font-bold">★ ${(item.vote_average || 0).toFixed(1)}</span>
                     </div>
                 `,
-
                 toggleSearch: () => document.getElementById('search-overlay').classList.toggle('hidden'),
-
                 performSearch: async (q) => {
                     if(!q) return;
                     const res = await app.api.fetch(`search/multi?query=${q}&`);
                     document.getElementById('search-results').innerHTML = res.results.filter(i => i.poster_path).map(i => app.ui.createCard(i, 'w-full')).join('');
                 },
-
                 closePlayer: () => {
                     const modal = document.getElementById('player-modal');
                     modal.classList.add('translate-y-full');
@@ -498,7 +412,7 @@
 
             player: {
                 open: async (id, type) => {
-                    app.slider.stop(); // Stop slider while watching
+                    app.slider.stop();
                     const modal = document.getElementById('player-modal');
                     modal.classList.remove('hidden');
                     setTimeout(() => modal.classList.remove('translate-y-full'), 10);
@@ -509,10 +423,10 @@
                     document.getElementById('player-title').textContent = data.title || data.name;
                     document.getElementById('meta-overview').textContent = data.overview;
                     document.getElementById('meta-year').textContent = (data.release_date || data.first_air_date || '').substring(0,4);
-                    document.getElementById('meta-rating').querySelector('span').textContent = data.vote_average.toFixed(1);
+                    document.getElementById('meta-rating').querySelector('span').textContent = (data.vote_average || 0).toFixed(1);
                     document.getElementById('meta-runtime').textContent = data.runtime ? `${data.runtime}m` : (data.episode_run_time ? `${data.episode_run_time[0]}m` : '');
 
-                    // Cast & Crew
+                    // Cast Section
                     document.getElementById('cast-list').innerHTML = data.credits.cast.slice(0, 10).map(c => `
                         <button onclick="app.router.go('person', ${c.id})" class="flex-none w-16 text-center group">
                             <img src="${c.profile_path ? IMG_BASE + c.profile_path : 'https://via.placeholder.com/50x50/111/fff?text=?'}" class="w-12 h-12 rounded-full object-cover mx-auto bg-white/10 group-hover:border-2 border-brand transition-all">
@@ -520,13 +434,11 @@
                         </button>
                     `).join('');
 
-                    // Watchlist Toggle
                     const watchBtn = document.getElementById('add-watchlist-btn');
                     const inWatchlist = app.state.watchlist.some(i => i.id === id);
                     watchBtn.innerHTML = inWatchlist ? `<svg class="w-5 h-5 text-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>` : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>`;
                     watchBtn.onclick = () => app.player.toggleWatchlist(data);
 
-                    // History tracking
                     app.player.addToHistory(data);
 
                     document.getElementById('server-list').innerHTML = SERVERS.map((s, idx) => `
@@ -551,10 +463,8 @@
                         document.getElementById('tv-selectors').classList.add('hidden');
                         app.player.play(0);
                     }
-                    
                     document.getElementById('similar-grid').innerHTML = data.similar.results.slice(0, 6).map(i => app.ui.createCard(i, 'w-full')).join('');
                 },
-
                 play: (idx) => {
                     document.querySelectorAll('.srv-btn').forEach((b, i) => b.classList.toggle('bg-brand', i === idx));
                     const data = app.state.currentData;
@@ -562,18 +472,15 @@
                     const e = document.getElementById('episode-select').value || 1;
                     let url = data.media_type === 'movie' ? SERVERS[idx].url : SERVERS[idx].tv;
                     url = url.replace('{id}', data.id).replace('{s}', s).replace('{e}', e);
-                    
                     document.getElementById('player-loader').classList.remove('hidden');
                     const frame = document.getElementById('video-frame');
                     frame.src = url;
                     frame.onload = () => document.getElementById('player-loader').classList.add('hidden');
                 },
-
                 playTrailer: () => {
                     const video = app.state.currentData.videos.results.find(v => v.type === 'Trailer') || app.state.currentData.videos.results[0];
-                    if(video) window.open(`https://youtube.com/watch?v=${video.key}`, '_blank');
+                    if(video) window.open(`https://www.youtube.com/watch?v=${video.key}`, '_blank');
                 },
-
                 toggleWatchlist: (item) => {
                     const idx = app.state.watchlist.findIndex(i => i.id === item.id);
                     if(idx > -1) app.state.watchlist.splice(idx, 1);
@@ -581,22 +488,17 @@
                     localStorage.setItem('watchlist', JSON.stringify(app.state.watchlist));
                     app.player.open(item.id, item.media_type || (item.title ? 'movie' : 'tv'));
                 },
-
                 addToHistory: (item) => {
-                    if(item.adult) return;
                     app.state.history = app.state.history.filter(i => i.id !== item.id);
                     app.state.history.unshift(item);
                     if(app.state.history.length > 20) app.state.history.pop();
                     localStorage.setItem('history', JSON.stringify(app.state.history));
                 },
-
                 download: () => {
                     const data = app.state.currentData;
-                    const q = `${data.title || data.name} download index of`;
-                    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(data.title || data.name)} index of`, '_blank');
                 }
             },
-
             settings: {
                 toggleLang: () => {
                     localStorage.setItem('lang', app.state.lang === 'en' ? 'ar' : 'en');
@@ -604,7 +506,6 @@
                 }
             }
         };
-
         app.init();
     </script>
 </body>
