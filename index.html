@@ -67,10 +67,7 @@
     <nav class="md:hidden fixed top-0 w-full z-40 bg-gradient-to-b from-black/90 to-transparent px-4 py-4 flex justify-between items-center transition-all duration-300 pt-[calc(1rem+env(safe-area-inset-top))]" id="mobile-nav">
         <div class="text-xl font-black text-brand tracking-tighter shadow-lg">Mz <span class="text-white">cinema</span></div>
         <div class="flex gap-2">
-            <button onclick="app.router.go('watchlist')" class="p-2 bg-white/10 rounded-full backdrop-blur-md">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-            </button>
-            <button onclick="app.ui.toggleSearch()" class="p-2 bg-white/10 rounded-full backdrop-blur-md">
+            <button onclick="app.router.go('search')" class="p-2 bg-white/10 rounded-full backdrop-blur-md">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
         </div>
@@ -80,6 +77,7 @@
         <div class="text-3xl font-black text-brand mb-10">Mz <span class="text-white">cinema</span></div>
         <div class="space-y-2 flex-1">
             <button onclick="app.router.go('home')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="home">Home</button>
+            <button onclick="app.router.go('search')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="search">Search</button>
             <button onclick="app.router.go('movies')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="movies">Movies</button>
             <button onclick="app.router.go('tv')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="tv">Series</button>
             <button onclick="app.router.go('watchlist')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="watchlist">My List</button>
@@ -91,20 +89,12 @@
     </aside>
 
     <main id="main-view" class="md:ml-64 min-h-screen pb-24 md:pb-0">
-        <div id="search-overlay" class="fixed inset-0 bg-black/95 z-[60] hidden flex-col pt-4 px-4 pt-[calc(1rem+env(safe-area-inset-top))]">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="relative flex-1">
-                    <input type="text" id="searchInput" placeholder="Search movies, shows..." class="w-full bg-white/10 border border-white/10 rounded-xl px-12 py-3.5 focus:outline-none focus:border-brand text-white placeholder-gray-500">
-                </div>
-                <button onclick="app.ui.toggleSearch()" class="text-white font-medium p-2">Cancel</button>
-            </div>
-            <div id="search-results" class="flex-1 overflow-y-auto grid grid-cols-2 gap-4 pb-20"></div>
-        </div>
         <div id="view-container"></div>
     </main>
 
     <div class="md:hidden fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-xl border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe">
         <button onclick="app.router.go('home')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="home"><span class="text-[10px] font-medium">Home</span></button>
+        <button onclick="app.router.go('search')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="search"><span class="text-[10px] font-medium">Search</span></button>
         <button onclick="app.router.go('movies')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="movies"><span class="text-[10px] font-medium">Movies</span></button>
         <button onclick="app.router.go('tv')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="tv"><span class="text-[10px] font-medium">Series</span></button>
         <button onclick="app.router.go('watchlist')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="watchlist"><span class="text-[10px] font-medium">My List</span></button>
@@ -181,19 +171,25 @@
 
         const app = {
             state: { 
+                currentView: 'home',
                 currentData: null, 
                 lang: localStorage.getItem('lang') || 'en',
                 watchlist: JSON.parse(localStorage.getItem('watchlist') || '[]'),
-                history: JSON.parse(localStorage.getItem('history') || '[]')
+                history: JSON.parse(localStorage.getItem('history') || '[]'),
+                searchState: { query: '', page: 1, total_pages: 1, loading: false }
             },
 
             init: () => {
                 if(app.state.lang === 'ar') document.body.classList.add('rtl');
                 app.router.go('home');
-                let timeout;
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => app.ui.performSearch(e.target.value), 500);
+                
+                // Window Scroll Listener for Infinite Scroll on Search Page
+                window.addEventListener('scroll', () => {
+                    if (app.state.currentView === 'search') {
+                        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                            app.ui.loadMoreSearch();
+                        }
+                    }
                 });
             },
 
@@ -251,6 +247,7 @@
 
             router: {
                 go: async (view, param) => {
+                    app.state.currentView = view;
                     app.slider.stop();
                     document.querySelectorAll('.nav-item, .nav-btn').forEach(el => el.classList.toggle('text-brand', el.dataset.target === view));
                     const container = document.getElementById('view-container');
@@ -278,6 +275,8 @@
                             arabic: arabic.results,
                             hollywood: hollywood.results
                         });
+                    } else if (view === 'search') {
+                        app.ui.renderSearchPage();
                     } else if(view === 'watchlist') {
                         app.ui.renderWatchlist();
                     } else if(view === 'person') {
@@ -387,6 +386,39 @@
                         </div>
                     `;
                 },
+                renderSearchPage: () => {
+                    const container = document.getElementById('view-container');
+                    container.innerHTML = `
+                        <div class="pt-24 px-4 min-h-screen">
+                            <div class="relative mb-6">
+                                <input type="text" id="mainSearchInput" placeholder="Search movies, TV shows..." 
+                                    class="w-full bg-white/10 border border-white/10 rounded-xl px-12 py-4 focus:outline-none focus:border-brand text-white placeholder-gray-500 text-lg"
+                                    value="${app.state.searchState.query}"
+                                    autofocus
+                                >
+                                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            
+                            <div id="search-grid" class="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-10">
+                                </div>
+                            <div id="search-loader" class="hidden py-4 flex justify-center"><div class="loader"></div></div>
+                        </div>
+                    `;
+                    
+                    // Attach listener
+                    let timeout;
+                    const input = document.getElementById('mainSearchInput');
+                    input.focus();
+                    input.addEventListener('input', (e) => {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => app.ui.performSearch(e.target.value), 500);
+                    });
+
+                    // If we have previous results, render them
+                    if (app.state.searchState.query) {
+                        app.ui.performSearch(app.state.searchState.query);
+                    }
+                },
                 createCard: (item, width = 'w-36', isHistory = false) => `
                     <div onclick="app.player.open(${item.id}, '${item.media_type || (item.title ? 'movie' : 'tv')}')" class="flex-none ${width} relative group cursor-pointer">
                         <div class="aspect-[2/3] rounded-xl overflow-hidden bg-white/5 mb-2 relative">
@@ -397,11 +429,37 @@
                         <span class="text-[10px] text-yellow-500 font-bold">★ ${(item.vote_average || 0).toFixed(1)}</span>
                     </div>
                 `,
-                toggleSearch: () => document.getElementById('search-overlay').classList.toggle('hidden'),
                 performSearch: async (q) => {
-                    if(!q) return;
-                    const res = await app.api.fetch(`search/multi?query=${q}&`);
-                    document.getElementById('search-results').innerHTML = res.results.filter(i => i.poster_path).map(i => app.ui.createCard(i, 'w-full')).join('');
+                    if(!q) {
+                        document.getElementById('search-grid').innerHTML = '';
+                        return;
+                    }
+                    // Reset State
+                    app.state.searchState = { query: q, page: 1, total_pages: 1, loading: false };
+                    document.getElementById('search-grid').innerHTML = ''; 
+                    app.ui.loadMoreSearch(); 
+                },
+                loadMoreSearch: async () => {
+                    const { query, page, loading, total_pages } = app.state.searchState;
+                    if(loading || (page > total_pages && page !== 1) || !query) return;
+
+                    app.state.searchState.loading = true;
+                    const loader = document.getElementById('search-loader');
+                    if(loader) loader.classList.remove('hidden');
+
+                    const res = await app.api.fetch(`search/multi?query=${query}&page=${page}&`);
+                    
+                    if(loader) loader.classList.add('hidden');
+                    
+                    if(res.results) {
+                        app.state.searchState.total_pages = res.total_pages;
+                        app.state.searchState.page += 1;
+                        app.state.searchState.loading = false;
+                        
+                        const html = res.results.filter(i => i.poster_path).map(i => app.ui.createCard(i, 'w-full')).join('');
+                        const grid = document.getElementById('search-grid');
+                        if(grid) grid.insertAdjacentHTML('beforeend', html);
+                    }
                 },
                 closePlayer: () => {
                     const modal = document.getElementById('player-modal');
