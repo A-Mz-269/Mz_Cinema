@@ -1,570 +1,1927 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#000000">
-    
-    <title>Mz Cinema</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Mz Cinema">
-    
-    <link rel="apple-touch-icon" href="https://image.tmdb.org/t/p/w500/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
-    <link rel="icon" href="https://image.tmdb.org/t/p/w500/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg">
-    <link rel="manifest" href="manifest.json">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#08080f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mz Cinema</title>
+<link rel="manifest" id="mf">
+<script>try{const m={name:"Mz Cinema",short_name:"Mz Cinema",start_url:".",display:"standalone",background_color:"#08080f",theme_color:"#08080f",icons:[{src:"https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg",sizes:"512x512",type:"image/jpeg"}]};document.getElementById('mf').setAttribute('href',URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'})));}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════ RESET & TOKENS ═══════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Brand */
+  --red:#E50914;
+  --red-a:.14;
+  --red-dim:rgba(229,9,20,.14);
+  --red-glow:rgba(229,9,20,.30);
+  --gold:#f5c518;
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('App Ready'))
-                    .catch(err => console.log('Registration Failed', err));
-            });
-        }
-    </script>
+  /* Dark surfaces */
+  --bg:#08080f;
+  --s0:#0b0b15;
+  --s1:#0f0f1c;
+  --s2:#141428;
+  --s3:#1a1a32;
+  --s4:#22223c;
+  --s5:#2c2c48;
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: { 
-                        'brand': '#E50914', 
-                        'surface': '#000000', 
-                        'surface-light': '#1A1A1A',
-                        'glass': 'rgba(20, 20, 20, 0.90)'
-                    },
-                    fontFamily: { sans: ['Outfit', 'Noto Sans Arabic', 'sans-serif'] },
-                    screens: { 'xs': '375px' }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { -webkit-tap-highlight-color: transparent; background-color: #000; }
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
-        .touch-action-pan-y { touch-action: pan-y; }
-        img { transition: opacity 0.3s ease-in-out; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .loader { width: 30px; height: 30px; border: 3px solid #333; border-top-color: #E50914; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .rtl { direction: rtl; }
-        .skeleton { background: linear-gradient(90deg, #1A1A1A 25%, #2A2A2A 50%, #1A1A1A 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; }
-        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .slide { opacity: 0; transition: opacity 0.8s ease-in-out; position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-        .slide.active { opacity: 1; z-index: 10; pointer-events: auto; }
-        .slider-dot { transition: all 0.3s ease; }
-        .slider-dot.active { background-color: #E50914; width: 24px; }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-    </style>
+  /* Text */
+  --t1:#f0f0f8;
+  --t2:#a0a0c0;
+  --t3:#606080;
+
+  /* Utility */
+  --border:rgba(255,255,255,.07);
+  --border2:rgba(255,255,255,.12);
+  --glass:rgba(11,11,21,.88);
+  --glass2:rgba(8,8,15,.94);
+
+  /* Layout */
+  --sidebar:260px;
+  --radius:12px;
+  --radius-sm:8px;
+  --radius-lg:16px;
+
+  /* Transitions */
+  --ease:cubic-bezier(.4,0,.2,1);
+  --fast:.15s;
+  --mid:.25s;
+  --slow:.35s;
+}
+html[data-theme=light]{
+  --bg:#f0f0f8;
+  --s0:#ffffff;
+  --s1:#f8f8ff;
+  --s2:#ebebf5;
+  --s3:#dcdcec;
+  --s4:#cdcde0;
+  --s5:#bdbdd4;
+  --t1:#090912;
+  --t2:#505070;
+  --t3:#909090;
+  --border:rgba(0,0,0,.07);
+  --border2:rgba(0,0,0,.12);
+  --glass:rgba(240,240,248,.9);
+  --glass2:rgba(240,240,248,.97);
+}
+
+/* ═══════════════ ARABIC ═══════════════ */
+body.ar,body.ar *{font-family:'Cairo',sans-serif!important}
+body.ar{direction:rtl}
+body.ar .sidebar{left:auto;right:0;border-right:none;border-left:1px solid var(--border)}
+body.ar #app{margin-left:0}
+@media(min-width:768px){body.ar #app{margin-right:var(--sidebar)}}
+body.ar .nav-item{text-align:right}
+body.ar .macts{flex-direction:row-reverse}
+body.ar .hs,.body.ar .cast-scroll{direction:ltr}
+body.ar .search-header{flex-direction:row-reverse}
+body.ar #si{padding:11px 44px 11px 14px;text-align:right}
+body.ar .si-icon{left:auto;right:14px}
+body.ar .chip-bar{direction:ltr}
+
+/* ═══════════════ BASE ═══════════════ */
+html,body{overscroll-behavior-y:none}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);color:var(--t1);
+  -webkit-tap-highlight-color:transparent;
+  overflow-x:hidden;min-height:100dvh;
+  transition:background var(--mid) var(--ease),color var(--mid) var(--ease);
+}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--s5);border-radius:4px}
+
+/* ═══════════════ SIDEBAR ═══════════════ */
+.sidebar{
+  position:fixed;inset-y:0;left:0;width:var(--sidebar);
+  background:var(--s0);border-right:1px solid var(--border);
+  display:none;flex-direction:column;padding:18px 10px;
+  z-index:50;overflow-y:auto;
+  transition:background var(--mid);
+}
+@media(min-width:768px){.sidebar{display:flex}}
+
+.sb-logo{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 12px 22px;cursor:pointer;
+}
+.sb-logo-text{
+  font-family:'Bebas Neue',sans-serif;font-size:24px;
+  letter-spacing:3px;line-height:1;
+}
+.sb-logo-text em{color:var(--red);font-style:normal}
+.sb-logo-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);
+  box-shadow:0 0 8px var(--red-glow);
+  flex:none;margin-top:-12px;
+}
+
+.sb-section{
+  font-size:9px;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;color:var(--t3);
+  padding:0 12px;margin:14px 0 4px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:11px;
+  padding:9px 12px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:500;color:var(--t2);
+  transition:background var(--fast),color var(--fast);
+  width:100%;text-align:left;
+}
+.nav-item svg{flex:none;width:17px;height:17px;stroke-width:1.8}
+.nav-item:hover{background:var(--s2);color:var(--t1)}
+.nav-item.active{background:var(--red-dim);color:var(--red)}
+.nav-item.active svg{stroke:var(--red)}
+
+.sb-footer{
+  margin-top:auto;padding-top:14px;
+  display:flex;flex-direction:column;gap:6px;
+  border-top:1px solid var(--border);
+}
+.sb-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-radius:var(--radius-sm);
+  background:var(--s2);border:1px solid var(--border);
+  font-size:12px;font-weight:500;color:var(--t1);
+  transition:border-color var(--fast);
+}
+.sb-toggle:hover{border-color:var(--red)}
+.pill-badge{
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;
+  padding:2px 8px;border-radius:20px;letter-spacing:.3px;
+}
+.switch{
+  width:36px;height:20px;border-radius:10px;
+  background:var(--s5);position:relative;
+  transition:background var(--fast);flex:none;pointer-events:none;
+}
+.switch.on{background:var(--red)}
+.switch::after{
+  content:'';position:absolute;
+  width:14px;height:14px;border-radius:50%;
+  background:#fff;top:3px;left:3px;
+  transition:left var(--fast);
+}
+.switch.on::after{left:19px}
+
+/* ═══════════════ MOBILE HEADER ═══════════════ */
+.mhdr{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  height:56px;display:flex;align-items:center;
+  justify-content:space-between;
+  padding:0 14px;
+  padding-top:env(safe-area-inset-top,0px);
+  background:linear-gradient(180deg,var(--glass2) 55%,transparent);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+@media(min-width:768px){.mhdr{display:none}}
+.m-logo{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;
+  letter-spacing:3px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+}
+.m-logo em{color:var(--red);font-style:normal}
+.m-logo-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--red);margin-top:-10px;
+}
+.macts{display:flex;gap:6px}
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--s2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--t1);transition:all var(--fast);
+  touch-action:manipulation;
+}
+.icon-btn:hover{border-color:var(--red);color:var(--red)}
+.icon-btn svg{width:16px;height:16px;stroke-width:1.8}
+.icon-btn:active{transform:scale(.92);background:var(--s3)}
+
+/* ═══════════════ BOTTOM NAV ═══════════════ */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:var(--glass);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-top:1px solid var(--border);
+  display:flex;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media(min-width:768px){.bnav{display:none}}
+.bnav-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:3px;padding:10px 0;
+  color:var(--t3);
+  transition:color var(--fast);
+  position:relative;touch-action:manipulation;
+}
+.bnav-item svg{width:20px;height:20px;stroke-width:1.8}
+.bnav-item span{font-size:9px;font-weight:600;letter-spacing:.2px}
+.bnav-item.active{color:var(--red)}
+.bnav-item.active::before{
+  content:'';position:absolute;top:0;left:50%;
+  transform:translateX(-50%);
+  width:28px;height:2.5px;
+  background:var(--red);border-radius:0 0 3px 3px;
+}
+.bnav-item:active{opacity:.7}
+
+/* ═══════════════ LAYOUT ═══════════════ */
+#app{
+  min-height:100dvh;
+  padding-bottom:calc(62px + env(safe-area-inset-bottom,0px));
+}
+@media(min-width:768px){#app{margin-left:var(--sidebar);padding-bottom:0}}
+.page{display:none;min-height:100dvh;touch-action:pan-y}
+.page.active{display:block}
+
+/* ═══════════════ HERO ═══════════════ */
+.hero{
+  position:relative;width:100%;
+  height:72vh;min-height:400px;max-height:660px;
+  overflow:hidden;background:var(--s1);
+}
+@media(min-width:768px){.hero{height:84vh;max-height:740px}}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease);z-index:0;pointer-events:none}
+.slide.on{opacity:1;z-index:1;pointer-events:auto}
+.slide-img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
+.slide-fog{
+  position:absolute;inset:0;
+  background:linear-gradient(0deg,var(--bg) 0%,rgba(8,8,15,.62) 38%,rgba(8,8,15,.08) 70%,rgba(8,8,15,.28) 100%);
+}
+html[data-theme=light] .slide-fog{
+  background:linear-gradient(0deg,var(--bg) 0%,rgba(240,240,248,.68) 40%,rgba(240,240,248,.06) 70%);
+}
+.slide-body{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:24px 18px 60px;z-index:2;
+}
+@media(min-width:768px){.slide-body{padding:40px 40px 50px;max-width:660px}}
+.slide-type{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;padding:3px 10px;border-radius:4px;
+  margin-bottom:10px;
+}
+.slide-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(32px,8.5vw,72px);
+  line-height:1.02;letter-spacing:2px;
+  margin-bottom:10px;
+  text-shadow:0 2px 20px rgba(0,0,0,.5);
+}
+body.ar .slide-title{font-size:clamp(26px,6vw,56px);line-height:1.35}
+.slide-pills{display:flex;align-items:center;gap:7px;margin-bottom:18px;flex-wrap:wrap}
+.pill{
+  display:flex;align-items:center;gap:4px;
+  font-size:12px;font-weight:600;
+  color:rgba(255,255,255,.82);
+  background:rgba(255,255,255,.1);
+  backdrop-filter:blur(8px);
+  padding:4px 10px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.12);
+}
+.pill.gold{color:var(--gold);border-color:rgba(245,197,24,.28);background:rgba(245,197,24,.1)}
+.slide-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn-watch{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--red);color:#fff;
+  font-size:13px;font-weight:700;
+  padding:11px 24px;border-radius:50px;
+  transition:all var(--fast);
+  box-shadow:0 6px 24px var(--red-glow);
+  text-transform:uppercase;letter-spacing:.6px;
+  touch-action:manipulation;
+}
+.btn-watch:hover{transform:translateY(-1px);box-shadow:0 10px 32px var(--red-glow)}
+.btn-watch:active{transform:scale(.96)}
+.btn-info{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.12);color:#fff;
+  font-size:13px;font-weight:700;
+  padding:11px 20px;border-radius:50px;
+  border:1px solid rgba(255,255,255,.22);
+  transition:all var(--fast);
+  text-transform:uppercase;letter-spacing:.6px;
+  backdrop-filter:blur(6px);touch-action:manipulation;
+}
+.btn-info:hover{background:rgba(255,255,255,.22)}
+.btn-info:active{transform:scale(.96)}
+.hero-nav{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:5;
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.15);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:all var(--fast);
+  backdrop-filter:blur(8px);touch-action:manipulation;
+}
+.hero:hover .hero-nav{opacity:1}
+.hero-nav:hover{background:var(--red);border-color:var(--red)}
+.hero-nav:active{transform:translateY(-50%) scale(.9)}
+.hero-nav.prev{left:14px}
+.hero-nav.next{right:14px}
+.hero-nav svg{width:16px;height:16px;stroke-width:2.2}
+.hero-dots{
+  position:absolute;bottom:22px;left:50%;
+  transform:translateX(-50%);z-index:5;
+  display:flex;gap:5px;
+}
+.dot-btn{
+  width:5px;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.28);
+  transition:all var(--mid);
+}
+.dot-btn.on{width:20px;background:var(--red)}
+
+/* ═══════════════ SECTIONS ═══════════════ */
+.content{padding:4px 0 0;position:relative;z-index:2}
+.section{padding:18px 0 4px}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;margin-bottom:12px;
+}
+@media(min-width:768px){.section-head{padding:0 28px}}
+.section-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px;letter-spacing:1.2px;
+  display:flex;align-items:center;gap:9px;
+}
+body.ar .section-title{font-size:17px;letter-spacing:0}
+.section-title::before{
+  content:'';display:inline-block;
+  width:3px;height:18px;
+  background:linear-gradient(180deg,#ff5555,var(--red));
+  border-radius:2px;flex:none;
+  box-shadow:0 0 8px var(--red-glow);
+}
+.see-all{
+  font-size:10px;font-weight:700;color:var(--red);
+  text-transform:uppercase;letter-spacing:1px;
+  padding:4px 2px;touch-action:manipulation;
+}
+.hs{
+  display:flex;gap:10px;overflow-x:auto;
+  padding:2px 18px 14px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.hs::-webkit-scrollbar{display:none}
+@media(min-width:768px){.hs{padding:2px 28px 14px;gap:13px}}
+
+/* ═══════════════ CATEGORY CHIPS ═══════════════ */
+.cat-chip{
+  flex:none;cursor:pointer;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:13px 17px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  min-width:88px;transition:all var(--fast);
+  touch-action:manipulation;
+}
+.cat-chip:hover{border-color:var(--red);transform:translateY(-2px)}
+.cat-chip:active{transform:scale(.94)}
+.cat-emoji{font-size:26px}
+.cat-label{font-size:10px;font-weight:600;color:var(--t2);text-align:center}
+
+/* ═══════════════ CARDS ═══════════════ */
+.card{
+  flex:none;cursor:pointer;position:relative;
+  border-radius:var(--radius);overflow:hidden;
+  transition:transform var(--fast),box-shadow var(--fast);
+  touch-action:manipulation;
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.card:active{transform:scale(.95)}
+.card-img{
+  aspect-ratio:2/3;background:var(--s2);
+  position:relative;overflow:hidden;
+}
+.card-img img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .4s var(--ease);display:block;
+}
+.card:hover .card-img img{transform:scale(1.06)}
+.card-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(0deg,rgba(8,8,15,.96) 0%,rgba(8,8,15,.18) 65%,transparent 100%);
+  opacity:0;transition:opacity var(--fast);
+  display:flex;align-items:flex-end;padding:10px;
+}
+.card:hover .card-overlay{opacity:1}
+.card-play{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--red);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px var(--red-glow);
+}
+.card-play svg{width:12px;height:12px;margin-left:2px}
+.card-badge{
+  position:absolute;top:7px;left:7px;
+  background:var(--red);color:#fff;
+  font-size:7px;font-weight:700;
+  padding:2px 6px;border-radius:3px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.card-score{
+  position:absolute;top:7px;right:7px;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+  color:var(--gold);font-size:9px;font-weight:700;
+  padding:2px 6px;border-radius:3px;
+}
+.card-prog{position:absolute;bottom:0;left:0;height:2px;background:var(--red)}
+.card-body{padding:7px 2px 3px}
+.card-title{
+  font-size:11.5px;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--t1);letter-spacing:-.01em;
+}
+.card-year{font-size:10px;color:var(--t2);margin-top:2px}
+.csm{width:126px}
+@media(min-width:768px){.csm{width:148px}}
+.cgc{width:100%}
+
+/* ═══════════════ BROWSE PAGE ═══════════════ */
+.page-top{padding:70px 18px 14px}
+@media(min-width:768px){.page-top{padding:34px 28px 14px}}
+.page-heading{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:32px;letter-spacing:2px;
+}
+body.ar .page-heading{font-size:26px;letter-spacing:0}
+.genre-bar{
+  display:flex;gap:6px;overflow-x:auto;
+  padding-bottom:2px;margin-top:12px;scrollbar-width:none;
+}
+.genre-bar::-webkit-scrollbar{display:none}
+.genre-btn{
+  flex:none;padding:6px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;
+  border:1px solid var(--border);background:var(--s2);
+  color:var(--t2);transition:all var(--fast);
+  white-space:nowrap;touch-action:manipulation;
+}
+.genre-btn:hover,.genre-btn.on{background:var(--red);border-color:var(--red);color:#fff}
+.sort-strip{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 18px 12px;flex-wrap:wrap;
+}
+@media(min-width:768px){.sort-strip{padding:8px 28px 12px}}
+.sort-label{font-size:11px;color:var(--t2);font-weight:600}
+.sort-select{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--t1);
+  font-size:11px;padding:5px 10px;outline:none;
+}
+.content-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:10px;padding:0 18px;
+}
+@media(min-width:480px){.content-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){.content-grid{grid-template-columns:repeat(4,1fr);padding:0 28px;gap:12px}}
+@media(min-width:1024px){.content-grid{grid-template-columns:repeat(5,1fr)}}
+@media(min-width:1280px){.content-grid{grid-template-columns:repeat(6,1fr)}}
+.load-more-btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:calc(100% - 36px);margin:16px 18px;padding:13px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--radius);color:var(--t1);
+  font-size:13px;font-weight:600;
+  transition:all var(--fast);touch-action:manipulation;
+}
+.load-more-btn:hover{border-color:var(--red);color:var(--red)}
+.load-more-btn:active{transform:scale(.98)}
+
+/* ═══════════════ WATCHLIST ═══════════════ */
+.wl-top{padding:70px 18px 14px}
+@media(min-width:768px){.wl-top{padding:34px 28px 14px}}
+.wl-stats{display:flex;gap:10px;margin-top:10px}
+.stat-box{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:9px 14px;
+}
+.stat-num{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;
+  color:var(--red);line-height:1;
+}
+.stat-lbl{font-size:10px;color:var(--t2);margin-top:2px}
+.wl-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:10px;padding:0 18px;
+}
+@media(min-width:480px){.wl-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){.wl-grid{grid-template-columns:repeat(4,1fr);padding:0 28px}}
+.wl-empty{
+  text-align:center;padding:64px 20px;color:var(--t2);
+}
+.wl-empty svg{width:52px;height:52px;margin:0 auto 14px;opacity:.2}
+.wl-empty h3{font-size:18px;font-weight:700;margin-bottom:7px;color:var(--t1)}
+.wl-empty p{font-size:13px;line-height:1.65}
+
+/* ═══════════════ PERSON ═══════════════ */
+.person-hero{
+  padding:72px 18px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+}
+@media(min-width:768px){.person-hero{padding:38px 28px 20px;flex-direction:row;align-items:flex-start}}
+.person-av{
+  width:112px;height:112px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--red);background:var(--s2);flex:none;
+}
+.person-name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:30px;letter-spacing:1px;
+}
+body.ar .person-name{font-size:24px;letter-spacing:0}
+.person-tags{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 10px}
+.person-tag{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:7px;padding:3px 9px;font-size:10px;color:var(--t2);
+}
+.person-bio{
+  font-size:13px;color:var(--t2);line-height:1.8;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ═══════════════ PLAYER ═══════════════ */
+#pm{
+  position:fixed;inset:0;background:var(--bg);z-index:70;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform var(--slow) var(--ease);
+  overflow:hidden;
+}
+#pm.open{transform:translateY(0)}
+#pm.gone{display:none}
+
+.player-bar{
+  position:absolute;top:0;left:0;right:0;z-index:5;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;
+  padding-top:calc(12px + env(safe-area-inset-top,0px));
+  background:linear-gradient(180deg,var(--glass2) 0%,transparent 100%);
+}
+html[data-theme=light] .player-bar{background:linear-gradient(180deg,rgba(240,240,248,.97) 0%,transparent 100%)}
+.player-bar-title{
+  font-size:14px;font-weight:700;
+  flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin:0 10px;
+}
+.player-bar-actions{display:flex;gap:6px;flex:none}
+
+/* Video */
+.vwrap{width:100%;background:#000;position:relative;flex:none}
+.vwrap::after{content:'';display:block;padding-bottom:56.25%}
+#vf{position:absolute;inset:0;width:100%;height:100%;border:none}
+#ld{
+  position:absolute;inset:0;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;
+  background:var(--bg);
+}
+#ldp{font-size:12px;color:var(--t2)}
+
+/* Fullscreen */
+#fs-btn{
+  position:absolute;bottom:10px;right:10px;z-index:10;
+  width:34px;height:34px;border-radius:var(--radius-sm);
+  background:rgba(0,0,0,.6);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  transition:all var(--fast);opacity:.8;touch-action:manipulation;
+}
+#fs-btn:hover{opacity:1;border-color:var(--red)}
+#fs-btn:active{transform:scale(.9)}
+#fs-btn svg{width:16px;height:16px;stroke-width:2}
+.vwrap.fs-on{position:fixed!important;inset:0!important;z-index:200!important;padding-bottom:0!important}
+.vwrap.fs-on::after{display:none}
+.vwrap.fs-on #vf{position:absolute;inset:0;width:100%;height:100%}
+.vwrap.fs-on #fs-btn{position:fixed;bottom:16px;right:16px;z-index:201;width:40px;height:40px;opacity:1}
+
+/* Player body */
+.player-body{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;scrollbar-width:none;
+}
+.player-body::-webkit-scrollbar{display:none}
+.player-meta{padding:18px 18px 40px}
+@media(min-width:768px){.player-meta{padding:22px 28px 40px}}
+
+.player-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:28px;letter-spacing:1.2px;
+  margin-bottom:10px;line-height:1.1;
+}
+body.ar .player-title{font-size:22px;letter-spacing:0}
+
+.info-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.info-pill{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:6px;padding:3px 9px;
+  font-size:11px;font-weight:600;color:var(--t2);
+}
+.info-pill.gold{color:var(--gold);border-color:rgba(245,197,24,.25);background:rgba(245,197,24,.07)}
+
+.player-desc{
+  font-size:14px;color:var(--t2);line-height:1.8;
+  margin-bottom:18px;
+}
+
+.player-actions{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.p-btn-white{
+  flex:1;min-width:110px;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  background:rgba(255,255,255,.95);color:#000;
+  font-size:12px;font-weight:700;
+  padding:11px 16px;border-radius:10px;
+  transition:all var(--fast);
+  text-transform:uppercase;letter-spacing:.5px;
+  touch-action:manipulation;
+}
+.p-btn-white:hover{background:#fff}
+.p-btn-white:active{transform:scale(.96)}
+html[data-theme=light] .p-btn-white{background:var(--red);color:#fff}
+.p-btn-dark{
+  flex:1;min-width:110px;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--s2);color:var(--t1);
+  font-size:12px;font-weight:700;
+  padding:11px 16px;border-radius:10px;
+  border:1px solid var(--border);
+  transition:all var(--fast);
+  text-transform:uppercase;letter-spacing:.5px;
+  touch-action:manipulation;
+}
+.p-btn-dark:hover{border-color:var(--red);color:var(--red)}
+.p-btn-dark:active{transform:scale(.96)}
+
+/* Source bar */
+.source-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:10px;
+  background:var(--s2);border:1px solid var(--border);
+  font-size:11px;color:var(--t2);
+  margin-bottom:12px;
+}
+.sdot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--t3);flex:none;
+  transition:background var(--fast);
+}
+.sdot.ok{background:#22c55e}
+.sdot.try{background:var(--gold);animation:blink .9s infinite}
+.sdot.err{background:var(--red)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* Source progress */
+#src-prog{display:none;margin-bottom:12px}
+#src-prog.on{display:block}
+.src-track{
+  display:flex;gap:3px;
+  height:3px;border-radius:2px;overflow:hidden;
+}
+.src-seg{
+  flex:1;height:100%;background:var(--s4);
+  transition:background var(--fast);border-radius:2px;
+}
+.src-seg.done{background:#22c55e}
+.src-seg.live{background:var(--gold);animation:blink .9s infinite}
+.src-seg.fail{background:var(--red);opacity:.45}
+
+/* Manual servers */
+#srv-manual{display:none;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+#srv-manual.on{display:flex}
+.srv-btn{
+  padding:6px 12px;border-radius:7px;
+  background:var(--s2);border:1px solid var(--border);
+  font-size:11px;font-weight:600;color:var(--t2);
+  transition:all var(--fast);touch-action:manipulation;
+}
+.srv-btn:hover{border-color:var(--red);color:var(--red)}
+.srv-btn.active{background:var(--red);border-color:var(--red);color:#fff}
+
+/* TV controls */
+.tv-ctrl{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:13px;
+  margin-bottom:14px;display:none;
+}
+.tv-ctrl.on{display:block}
+.tv-selects{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}
+.tv-select{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--t1);
+  font-size:12px;padding:8px 10px;outline:none;
+}
+.tv-nav{display:flex;gap:7px}
+.tv-btn{
+  flex:1;padding:9px;border-radius:var(--radius-sm);
+  background:var(--s3);color:var(--t1);
+  font-size:11px;font-weight:600;
+  transition:all var(--fast);touch-action:manipulation;
+}
+.tv-btn:hover{background:var(--red);color:#fff}
+.tv-btn:disabled{opacity:.3;pointer-events:none}
+
+/* Meta labels */
+.meta-lbl{
+  font-size:9px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--t3);margin-bottom:10px;
+}
+body.ar .meta-lbl{letter-spacing:0;font-size:10px}
+.meta-divider{
+  border-top:1px solid var(--border);
+  margin:20px 0 16px;
+}
+
+/* Cast */
+.cast-row{
+  display:flex;gap:12px;overflow-x:auto;
+  padding-bottom:4px;margin-bottom:20px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.cast-row::-webkit-scrollbar{display:none}
+.cast-card{
+  flex:none;width:62px;text-align:center;
+  cursor:pointer;touch-action:manipulation;
+}
+.cast-av{
+  width:52px;height:52px;border-radius:50%;
+  object-fit:cover;background:var(--s2);
+  margin:0 auto 5px;border:2px solid var(--border);
+  transition:border-color var(--fast),transform var(--fast);display:block;
+}
+.cast-card:hover .cast-av{border-color:var(--red);transform:scale(1.07)}
+.cast-name{font-size:8.5px;font-weight:600;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cast-role{font-size:7.5px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+
+/* Similar */
+.sim-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:9px;margin-bottom:10px;
+}
+@media(min-width:480px){.sim-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:768px){.sim-grid{grid-template-columns:repeat(5,1fr)}}
+
+/* ═══════════════ SEARCH PAGE ═══════════════ */
+#pg-search{
+  position:fixed;inset:0;z-index:60;
+  background:var(--bg);
+  display:none;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform var(--mid) var(--ease);
+  will-change:transform;
+}
+#pg-search.open{display:flex!important;transform:translateX(0)}
+
+.search-header{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;
+  padding-top:calc(10px + env(safe-area-inset-top,0px));
+  background:var(--s1);border-bottom:1px solid var(--border);
+  flex:none;
+}
+.si-wrap{flex:1;position:relative}
+.si-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--t2);pointer-events:none;
+}
+#si{
+  width:100%;background:var(--s2);
+  border:1.5px solid transparent;border-radius:12px;
+  padding:11px 14px 11px 42px;
+  font-size:15px;color:var(--t1);font-family:inherit;outline:none;
+  transition:border-color var(--fast),background var(--fast);
+  -webkit-appearance:none;
+}
+#si:focus{border-color:var(--red);background:var(--s1)}
+#si::placeholder{color:var(--t2);font-size:14px}
+.search-cancel{
+  color:var(--red);font-size:14px;font-weight:600;
+  white-space:nowrap;padding:6px 0;flex:none;
+  touch-action:manipulation;
+}
+
+/* Filter chip bar */
+.chip-bar{
+  background:var(--s1);border-bottom:1px solid var(--border);
+  height:46px;display:flex;align-items:center;
+  gap:7px;padding:0 14px;
+  flex:none;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.chip-bar::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:20px;
+  border:1.5px solid var(--border);background:var(--s2);
+  font-size:11px;font-weight:600;color:var(--t2);
+  white-space:nowrap;transition:all var(--fast);
+  touch-action:manipulation;
+}
+.chip select{
+  background:none;border:none;color:inherit;
+  font-size:11px;font-weight:600;font-family:inherit;
+  outline:none;cursor:pointer;padding:0;
+  -webkit-appearance:none;appearance:none;max-width:74px;
+}
+.chip svg{width:12px;height:12px;flex:none;stroke-width:2}
+.chip.on,.chip:active{
+  border-color:var(--red);background:var(--red-dim);color:var(--red);
+}
+.chip.on select{color:var(--red)}
+.chip-clear{
+  flex:none;padding:5px 10px;border-radius:20px;
+  font-size:11px;font-weight:700;color:var(--red);
+  touch-action:manipulation;white-space:nowrap;
+}
+
+/* Result count */
+#sr-count{
+  flex:none;padding:9px 16px 3px;
+  font-size:11px;font-weight:600;color:var(--t2);
+  letter-spacing:.02em;display:none;
+}
+
+/* Results list */
+#sr{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding:4px 8px 80px;
+  display:flex;flex-direction:column;
+  scrollbar-width:none;
+}
+#sr::-webkit-scrollbar{display:none}
+
+.sr-empty{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:60px 20px;
+  color:var(--t2);text-align:center;gap:10px;flex:1;
+}
+.sr-empty svg{width:40px;height:40px;opacity:.2}
+.sr-empty p{font-size:14px;line-height:1.6}
+
+.sr-group-label{
+  padding:12px 8px 6px;
+  font-size:9px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--t3);
+}
+
+/* Result row */
+.sr-row{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 8px;border-radius:11px;
+  cursor:pointer;user-select:none;
+  transition:background var(--fast);
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.sr-row:active{background:var(--s2);transform:scale(.985)}
+@media(hover:hover){.sr-row:hover{background:var(--s2)}}
+.sr-poster{
+  width:46px;height:69px;border-radius:8px;
+  object-fit:cover;background:var(--s2);flex:none;display:block;
+}
+.sr-info{flex:1;min-width:0}
+.sr-name{
+  font-size:14px;font-weight:600;color:var(--t1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.3;
+}
+.sr-metas{
+  display:flex;align-items:center;gap:5px;
+  margin-top:4px;overflow:hidden;
+}
+.sr-tag{
+  font-size:9.5px;font-weight:700;padding:2px 6px;
+  border-radius:4px;white-space:nowrap;flex:none;
+  background:var(--s3);color:var(--t2);
+  text-transform:uppercase;letter-spacing:.3px;
+}
+.sr-tag.tv{background:var(--red-dim);color:var(--red)}
+.sr-tag.movie{background:rgba(99,102,241,.12);color:#a5b4fc}
+.sr-score{
+  display:flex;align-items:center;gap:2px;
+  font-size:10px;font-weight:700;color:var(--gold);
+  flex:none;white-space:nowrap;
+}
+.sr-year{font-size:10px;color:var(--t2);flex:none}
+.sr-play{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--s2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--t2);flex:none;transition:all var(--fast);flex:none;
+}
+.sr-row:active .sr-play,
+@media(hover:hover){.sr-row:hover .sr-play}{background:var(--red);color:#fff}
+.sr-play svg{width:12px;height:12px;margin-left:2px}
+
+/* Person row */
+.sr-person{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 8px;border-radius:11px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  transition:background var(--fast);
+}
+.sr-person:active{background:var(--s2)}
+@media(hover:hover){.sr-person:hover{background:var(--s2)}}
+.sr-av{
+  width:46px;height:46px;border-radius:50%;
+  object-fit:cover;background:var(--s2);
+  flex:none;border:1.5px solid var(--border);
+}
+.sr-pname{font-size:14px;font-weight:600;color:var(--t1)}
+.sr-pdept{font-size:11px;color:var(--t2);margin-top:2px}
+
+/* ═══════════════ SPINNERS & SKELETONS ═══════════════ */
+.spinner{
+  width:28px;height:28px;
+  border:2.5px solid var(--s4);
+  border-top-color:var(--red);border-radius:50%;
+  animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-wrap{min-height:360px;display:flex;align-items:center;justify-content:center}
+.skel{
+  background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite;
+  border-radius:var(--radius);
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ═══════════════ TOAST ═══════════════ */
+#toast{
+  position:fixed;bottom:74px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:rgba(28,28,44,.94);
+  border:1px solid rgba(255,255,255,.1);
+  color:var(--t1);padding:10px 20px;
+  border-radius:28px;font-size:12px;font-weight:600;
+  z-index:999;opacity:0;
+  transition:all var(--mid);
+  white-space:nowrap;pointer-events:none;
+  backdrop-filter:blur(16px);
+  max-width:88vw;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:768px){#toast{bottom:26px}}
+
+/* ═══════════════ ANIMATIONS ═══════════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp var(--mid) var(--ease) forwards}
+</style>
 </head>
-<body class="bg-surface text-white font-sans antialiased overflow-x-hidden mb-20 md:mb-0">
+<body>
 
-    <nav class="md:hidden fixed top-0 w-full z-40 bg-gradient-to-b from-black/90 to-transparent px-4 py-4 flex justify-between items-center transition-all duration-300 pt-[calc(1rem+env(safe-area-inset-top))]" id="mobile-nav">
-        <div class="text-xl font-black text-brand tracking-tighter shadow-lg">Mz <span class="text-white">cinema</span></div>
-        <div class="flex gap-2">
-            <button onclick="app.router.go('search')" class="p-2 bg-white/10 rounded-full backdrop-blur-md">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </button>
-        </div>
-    </nav>
+<!-- ═══════ SIDEBAR ═══════ -->
+<aside class="sidebar">
+  <div class="sb-logo" onclick="showPage('home')">
+    <div class="sb-logo-text"><em>Mz</em>Cinema</div>
+    <div class="sb-logo-dot"></div>
+  </div>
+  <span class="sb-section" id="sb-browse">Browse</span>
+  <button class="nav-item active" data-v="home" onclick="showPage('home')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    <span id="sb-home">Home</span>
+  </button>
+  <button class="nav-item" data-v="movies" onclick="showPage('movies')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+    <span id="sb-movies">Movies</span>
+  </button>
+  <button class="nav-item" data-v="tv" onclick="showPage('tv')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    <span id="sb-series">Series</span>
+  </button>
+  <button class="nav-item" data-v="watchlist" onclick="showPage('watchlist')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+    <span id="sb-wl">My List</span>
+  </button>
+  <button class="nav-item" onclick="openSearch()">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <span id="sb-search">Search</span>
+  </button>
+  <div class="sb-footer">
+    <button class="sb-toggle" onclick="toggleTheme()">
+      <span id="theme-lbl">🌙 Dark Mode</span>
+      <div class="switch" id="sw-theme"></div>
+    </button>
+    <button class="sb-toggle" onclick="toggleLang()">
+      <span id="lang-lbl">🌐 English</span>
+      <span class="pill-badge" id="sb-switch">Switch</span>
+    </button>
+  </div>
+</aside>
 
-    <aside class="hidden md:flex fixed inset-y-0 left-0 w-64 bg-surface-light border-r border-white/5 flex-col p-6 z-50">
-        <div class="text-3xl font-black text-brand mb-10">Mz <span class="text-white">cinema</span></div>
-        <div class="space-y-2 flex-1">
-            <button onclick="app.router.go('home')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="home">Home</button>
-            <button onclick="app.router.go('search')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="search">Search</button>
-            <button onclick="app.router.go('movies')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="movies">Movies</button>
-            <button onclick="app.router.go('tv')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="tv">Series</button>
-            <button onclick="app.router.go('watchlist')" class="nav-btn w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 transition flex items-center gap-3 text-gray-400 hover:text-white" data-target="watchlist">My List</button>
-        </div>
-        <button onclick="app.settings.toggleLang()" class="mt-auto px-4 py-3 rounded-xl bg-white/5 flex justify-between items-center text-sm font-medium">
-            <span id="desktop-lang-label">English</span>
-            <span class="text-brand">Switch</span>
+<!-- ═══════ MOBILE HEADER ═══════ -->
+<header class="mhdr">
+  <div class="m-logo" onclick="showPage('home')">
+    <em>Mz</em>Cinema<span class="m-logo-dot"></span>
+  </div>
+  <div class="macts">
+    <button class="icon-btn" onclick="toggleTheme()" id="mtheme-btn">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+    </button>
+    <button class="icon-btn" onclick="toggleLang()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+    </button>
+    <button class="icon-btn" onclick="showPage('watchlist')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+    </button>
+    <button class="icon-btn" onclick="openSearch()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ═══════ PAGES ═══════ -->
+<main id="app">
+  <div class="page active" id="pg-home"><div id="vc-home"></div></div>
+  <div class="page" id="pg-movies"><div id="vc-movies"></div></div>
+  <div class="page" id="pg-tv"><div id="vc-tv"></div></div>
+  <div class="page" id="pg-watchlist"><div id="vc-watchlist"></div></div>
+  <div class="page" id="pg-person"><div id="vc-person"></div></div>
+  <div class="page" id="pg-cat"><div id="vc-cat"></div></div>
+</main>
+
+<!-- ═══════ BOTTOM NAV ═══════ -->
+<nav class="bnav">
+  <button class="bnav-item active" data-v="home" onclick="showPage('home')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    <span id="bn-home">Home</span>
+  </button>
+  <button class="bnav-item" data-v="movies" onclick="showPage('movies')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+    <span id="bn-movies">Movies</span>
+  </button>
+  <button class="bnav-item" data-v="tv" onclick="showPage('tv')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    <span id="bn-series">Series</span>
+  </button>
+  <button class="bnav-item" data-v="watchlist" onclick="showPage('watchlist')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+    <span id="bn-wl">My List</span>
+  </button>
+</nav>
+
+<!-- ═══════ SEARCH ═══════ -->
+<div id="pg-search">
+  <div class="search-header">
+    <button class="icon-btn" onclick="closeSearch()" style="flex:none">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="si-wrap">
+      <svg class="si-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input id="si" type="text" autocomplete="off" spellcheck="false" inputmode="search" placeholder="Search movies, shows, people…">
+    </div>
+    <button class="search-cancel" onclick="closeSearch()" id="s-cancel">Cancel</button>
+  </div>
+  <div class="chip-bar">
+    <div class="chip" id="chip-type">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h8m-8 6h16"/></svg>
+      <select id="sf-type" onchange="applyFilters()">
+        <option value="multi">All</option>
+        <option value="movie">Movies</option>
+        <option value="tv">Series</option>
+      </select>
+    </div>
+    <div class="chip" id="chip-genre">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+      <select id="sf-genre" onchange="applyFilters()">
+        <option value="">Genre</option>
+        <option value="28">Action</option><option value="12">Adventure</option>
+        <option value="16">Animation</option><option value="35">Comedy</option>
+        <option value="80">Crime</option><option value="18">Drama</option>
+        <option value="14">Fantasy</option><option value="27">Horror</option>
+        <option value="9648">Mystery</option><option value="10749">Romance</option>
+        <option value="878">Sci-Fi</option><option value="53">Thriller</option>
+        <option value="10752">War</option>
+      </select>
+    </div>
+    <div class="chip" id="chip-sort">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+      <select id="sf-sort" onchange="applyFilters()">
+        <option value="popularity.desc">Popular</option>
+        <option value="vote_average.desc">Top Rated</option>
+        <option value="release_date.desc">Newest</option>
+        <option value="release_date.asc">Oldest</option>
+      </select>
+    </div>
+    <div class="chip" id="chip-lang">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+      <select id="sf-origlang" onchange="applyFilters()">
+        <option value="">Language</option>
+        <option value="en">English</option><option value="ar">Arabic</option>
+        <option value="tr">Turkish</option><option value="ko">Korean</option>
+        <option value="hi">Hindi</option><option value="ja">Japanese</option>
+        <option value="fr">French</option><option value="es">Spanish</option>
+        <option value="de">German</option>
+      </select>
+    </div>
+    <div class="chip" id="chip-year">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <input id="sf-from" type="number" placeholder="Year" min="1900" max="2026"
+        onchange="applyFilters()"
+        style="background:none;border:none;color:inherit;font-size:11px;font-weight:600;font-family:inherit;outline:none;width:44px;padding:0;cursor:pointer">
+    </div>
+    <button class="chip-clear" onclick="clearFilters()" id="s-clear">✕ Clear</button>
+  </div>
+  <div id="sr-count"></div>
+  <div id="sr" role="list" aria-live="polite"></div>
+</div>
+
+<!-- ═══════ PLAYER ═══════ -->
+<div id="pm" class="gone">
+  <div class="player-bar">
+    <button class="icon-btn" onclick="closePlayer()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+    <div class="player-bar-title" id="ptxt"></div>
+    <div class="player-bar-actions">
+      <button class="icon-btn" id="wlbtn"></button>
+    </div>
+  </div>
+  <div class="vwrap" id="vwrap">
+    <iframe id="vf" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write"></iframe>
+    <div id="ld"><div class="spinner"></div><p id="ldp">Finding best source…</p></div>
+    <button id="fs-btn" onclick="toggleFS()" title="Fullscreen">
+      <svg id="fs-exp" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+      <svg id="fs-col" style="display:none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"/></svg>
+    </button>
+  </div>
+  <div class="player-body">
+    <div class="player-meta">
+      <h2 class="player-title" id="pmttl"></h2>
+      <div class="info-pills" id="ppills"></div>
+      <div class="player-actions">
+        <button class="p-btn-white" onclick="playTrailer()">
+          <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+          <span id="p-trailer">Trailer</span>
         </button>
-    </aside>
+        <button class="p-btn-dark" onclick="dlItem()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span id="p-dl">Download</span>
+        </button>
+      </div>
+      <p class="player-desc" id="pov"></p>
 
-    <main id="main-view" class="md:ml-64 min-h-screen pb-24 md:pb-0">
-        <div id="view-container"></div>
-    </main>
+      <div class="source-bar">
+        <div class="sdot try" id="sdot"></div>
+        <span id="stxt">Connecting…</span>
+      </div>
+      <div id="src-prog"><div class="src-track" id="src-track"></div></div>
+      <div id="srv-manual"></div>
 
-    <div class="md:hidden fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-xl border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe">
-        <button onclick="app.router.go('home')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="home"><span class="text-[10px] font-medium">Home</span></button>
-        <button onclick="app.router.go('search')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="search"><span class="text-[10px] font-medium">Search</span></button>
-        <button onclick="app.router.go('movies')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="movies"><span class="text-[10px] font-medium">Movies</span></button>
-        <button onclick="app.router.go('tv')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="tv"><span class="text-[10px] font-medium">Series</span></button>
-        <button onclick="app.router.go('watchlist')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition" data-target="watchlist"><span class="text-[10px] font-medium">My List</span></button>
+      <div class="tv-ctrl" id="tvctrl">
+        <div class="meta-lbl" id="p-ep">Episode</div>
+        <div class="tv-selects">
+          <select class="tv-select" id="ssel"></select>
+          <select class="tv-select" id="esel"></select>
+        </div>
+        <div class="tv-nav">
+          <button class="tv-btn" id="prevep">← Previous</button>
+          <button class="tv-btn" id="nextep">Next →</button>
+        </div>
+      </div>
+
+      <div class="meta-divider"></div>
+      <div class="meta-lbl" id="p-cast">Cast</div>
+      <div class="cast-row" id="castl"></div>
+
+      <div class="meta-divider"></div>
+      <div class="meta-lbl" id="p-more">More Like This</div>
+      <div class="sim-grid" id="siml"></div>
     </div>
+  </div>
+</div>
 
-    <div id="player-modal" class="fixed inset-0 bg-black z-[70] hidden overflow-y-auto transition-transform duration-300 translate-y-full">
-        <div class="sticky top-0 z-50 bg-black/90 backdrop-blur flex justify-between items-center p-4 border-b border-white/10 pt-[calc(1rem+env(safe-area-inset-top))]">
-            <h2 id="player-title" class="text-sm font-bold truncate max-w-[70%] text-gray-200"></h2>
-            <div class="flex gap-2">
-                <button id="add-watchlist-btn" class="p-2 bg-white/10 rounded-full text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></button>
-                <button onclick="app.ui.closePlayer()" class="p-2 bg-white/10 rounded-full text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
+<div id="toast"></div>
+
+<script>
+// ═══════════════ CONFIG ═══════════════
+const AK   = '290474c6946149a9f13fc82b72ec5274';
+const IMG  = 'https://image.tmdb.org/t/p/w500';
+const ORIG = 'https://image.tmdb.org/t/p/original';
+
+const SRVS=[
+  {n:'VidSrc ★',   m:'https://vidsrc.vip/embed/movie/{id}',                 tv:'https://vidsrc.vip/embed/tv/{id}/{s}/{e}'},
+  {n:'VidLink ★',  m:'https://vidlink.pro/movie/{id}?sub=ar&autoplay=1',    tv:'https://vidlink.pro/tv/{id}/{s}/{e}?sub=ar&autoplay=1'},
+  {n:'VidSrc.to',  m:'https://vidsrc.to/embed/movie/{id}',                  tv:'https://vidsrc.to/embed/tv/{id}/{s}/{e}'},
+  {n:'EmbedSu ★',  m:'https://embed.su/embed/movie/{id}',                   tv:'https://embed.su/embed/tv/{id}/{s}/{e}'},
+  {n:'AutoEmbed ★',m:'https://player.autoembed.cc/embed/movie/{id}',        tv:'https://player.autoembed.cc/embed/tv/{id}/{s}/{e}'},
+  {n:'MoviesAPI',  m:'https://moviesapi.club/movie/{id}',                    tv:'https://moviesapi.club/tv/{id}-{s}-{e}'},
+  {n:'2Embed',     m:'https://www.2embed.cc/embed/{id}',                     tv:'https://www.2embed.cc/embedtv/{id}&s={s}&e={e}'},
+  {n:'SmashyStream',m:'https://embed.smashystream.com/playere.php?tmdb={id}',tv:'https://embed.smashystream.com/playere.php?tmdb={id}&season={s}&episode={e}'},
+  {n:'VidBinge',   m:'https://vidbinge.dev/embed/movie/{id}',               tv:'https://vidbinge.dev/embed/tv/{id}/{s}/{e}'},
+  {n:'MultiEmbed', m:'https://multiembed.mov/?video_id={id}&tmdb=1',        tv:'https://multiembed.mov/?video_id={id}&tmdb=1&s={s}&e={e}'},
+  {n:'NontonGo',   m:'https://nontongo.win/embed/movie/{id}',               tv:'https://nontongo.win/embed/tv/{id}/{s}/{e}'},
+];
+
+const GM=[{id:'',n:'All'},{id:28,n:'Action'},{id:12,n:'Adventure'},{id:16,n:'Animation'},{id:35,n:'Comedy'},{id:80,n:'Crime'},{id:18,n:'Drama'},{id:14,n:'Fantasy'},{id:27,n:'Horror'},{id:9648,n:'Mystery'},{id:10749,n:'Romance'},{id:878,n:'Sci-Fi'},{id:53,n:'Thriller'},{id:10752,n:'War'}];
+const GT=[{id:'',n:'All'},{id:10759,n:'Action'},{id:16,n:'Animation'},{id:35,n:'Comedy'},{id:80,n:'Crime'},{id:18,n:'Drama'},{id:10765,n:'Sci-Fi'},{id:9648,n:'Mystery'},{id:10764,n:'Reality'}];
+
+const CATS=[
+  {key:'trending', en:'Trending',      ar:'\u0627\u0644\u0623\u0643\u062b\u0631 \u0631\u0648\u0627\u062c\u0627\u064b', emoji:'\uD83D\uDD25', ep:'trending/all/day?'},
+  {key:'nowplay',  en:'In Theaters',   ar:'\u0641\u064a \u062f\u0648\u0631 \u0627\u0644\u0633\u064a\u0646\u0645\u0627', emoji:'\uD83C\uDFAC', ep:'movie/now_playing?'},
+  {key:'hollywood',en:'Hollywood',     ar:'\u0647\u0648\u0644\u064a\u0648\u0648\u062f', emoji:'\uD83C\uDF1F', ep:'discover/movie?with_original_language=en&sort_by=popularity.desc&vote_count.gte=100&'},
+  {key:'arabic',   en:'Arabic',        ar:'\u0639\u0631\u0628\u064a', emoji:'\uD83C\uDF19', ep:'discover/movie?with_original_language=ar&sort_by=popularity.desc&'},
+  {key:'turkish',  en:'Turkish',       ar:'\u062a\u0631\u0643\u064a', emoji:'\uD83C\uDDF9\uD83C\uDDF7', ep:'discover/tv?with_original_language=tr&sort_by=popularity.desc&'},
+  {key:'kdrama',   en:'K-Drama',       ar:'\u0643\u0648\u0631\u064a', emoji:'\uD83C\uDDF0\uD83C\uDDF7', ep:'discover/tv?with_original_language=ko&sort_by=popularity.desc&'},
+  {key:'bollywood',en:'Bollywood',     ar:'\u0628\u0648\u0644\u064a\u0648\u0648\u062f', emoji:'\uD83C\uDFAD', ep:'discover/movie?with_original_language=hi&sort_by=popularity.desc&'},
+  {key:'anime',    en:'Anime',         ar:'\u0623\u0646\u0645\u064a', emoji:'\u26A1', ep:'discover/tv?with_genres=16&sort_by=popularity.desc&'},
+];
+
+// i18n
+const T={
+  en:{
+    home:'Home',movies:'Movies',series:'Series',wl:'My List',search:'Search',
+    cancel:'Cancel',trailer:'Trailer',dl:'Download',ep:'Episode',
+    prev:'\u2190 Prev',next:'Next \u2192',cast:'Cast',more:'More Like This',
+    sw:'Switch',browse:'Browse',cats:'Categories',
+    trending:'Trending',nowplay:'In Theaters',hollywood:'Hollywood',
+    turkish:'Turkish',arabic:'Arabic',kdrama:'K-Drama',bollywood:'Bollywood',anime:'Anime',
+    contW:'Continue Watching',saved:'Saved',watched:'Watched',
+    noSaved:'Nothing saved yet',noSavedTxt:'Bookmark any title to save it here',
+    history:'Watch History',filmography:'Filmography',
+    srcOk:'Streaming',srcTry:'Searching sources\u2026',srcFail:'Trying next\u2026',srcErr:'No source found',
+    addWl:'Added to My List \u2713',remWl:'Removed from My List',noTrailer:'No trailer available',
+    dark:'\uD83C\uDF19 Dark',light:'\u2600\uFE0F Light',
+    allMovies:'All Movies',allSeries:'All Series',loadMore:'Load More',seeAll:'See All',
+    manualSrc:'Choose source:',startSearch:'Search movies, shows, people\u2026',noResults:'No results found',
+    langLabel:'\uD83C\uDF10 English',results:'results',
+  },
+  ar:{
+    home:'\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629',movies:'\u0623\u0641\u0644\u0627\u0645',series:'\u0645\u0633\u0644\u0633\u0644\u0627\u062a',
+    wl:'\u0642\u0627\u0626\u0645\u062a\u064a',search:'\u0628\u062d\u062b',cancel:'\u0625\u0644\u063a\u0627\u0621',
+    trailer:'\u0625\u0639\u0644\u0627\u0646',dl:'\u062a\u062d\u0645\u064a\u0644',ep:'\u0627\u0644\u062d\u0644\u0642\u0629',
+    prev:'\u0627\u0644\u0633\u0627\u0628\u0642',next:'\u0627\u0644\u062a\u0627\u0644\u064a',
+    cast:'\u0637\u0627\u0642\u0645 \u0627\u0644\u0639\u0645\u0644',more:'\u0645\u0634\u0627\u0628\u0647',
+    sw:'\u062a\u0628\u062f\u064a\u0644',browse:'\u062a\u0635\u0641\u062d',cats:'\u0627\u0644\u0641\u0626\u0627\u062a',
+    trending:'\u0627\u0644\u0623\u0643\u062b\u0631 \u0631\u0648\u0627\u062c\u0627\u064b',nowplay:'\u0641\u064a \u062f\u0648\u0631 \u0627\u0644\u0633\u064a\u0646\u0645\u0627',
+    hollywood:'\u0647\u0648\u0644\u064a\u0648\u0648\u062f',turkish:'\u062a\u0631\u0643\u064a',arabic:'\u0639\u0631\u0628\u064a',
+    kdrama:'\u0643\u0648\u0631\u064a',bollywood:'\u0628\u0648\u0644\u064a\u0648\u0648\u062f',anime:'\u0623\u0646\u0645\u064a',
+    contW:'\u0645\u062a\u0627\u0628\u0639\u0629',saved:'\u0645\u062d\u0641\u0648\u0638',watched:'\u0634\u0627\u0647\u062f\u062a',
+    noSaved:'\u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u062d\u0641\u0648\u0638\u0627\u062a',noSavedTxt:'\u0627\u062d\u0641\u0638 \u0623\u064a \u0639\u0646\u0648\u0627\u0646 \u0644\u0639\u0631\u0636\u0647 \u0647\u0646\u0627',
+    history:'\u0633\u062c\u0644 \u0627\u0644\u0645\u0634\u0627\u0647\u062f\u0629',filmography:'\u0627\u0644\u0623\u0639\u0645\u0627\u0644',
+    srcOk:'\u062c\u0627\u0647\u0632',srcTry:'\u0628\u062d\u062b \u0639\u0646 \u0645\u0635\u062f\u0631\u2026',srcFail:'\u062a\u062c\u0631\u0628\u0629 \u0623\u062e\u0631\u2026',srcErr:'\u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u0635\u062f\u0631',
+    addWl:'\u062a\u0645\u062a \u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u2713',remWl:'\u062a\u0645\u062a \u0627\u0644\u0625\u0632\u0627\u0644\u0629',noTrailer:'\u0644\u0627 \u064a\u0648\u062c\u062f \u0625\u0639\u0644\u0627\u0646',
+    dark:'\uD83C\uDF19 \u0644\u064a\u0644\u064a',light:'\u2600\uFE0F \u0646\u0647\u0627\u0631\u064a',
+    allMovies:'\u0643\u0644 \u0627\u0644\u0623\u0641\u0644\u0627\u0645',allSeries:'\u0643\u0644 \u0627\u0644\u0645\u0633\u0644\u0633\u0644\u0627\u062a',
+    loadMore:'\u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0645\u0632\u064a\u062f',seeAll:'\u0639\u0631\u0636 \u0627\u0644\u0643\u0644',
+    manualSrc:'\u0627\u062e\u062a\u0631 \u0645\u0635\u062f\u0631\u0627\u064b:',
+    startSearch:'\u0627\u0628\u062d\u062b \u0639\u0646 \u0623\u0641\u0644\u0627\u0645\u060c \u0645\u0633\u0644\u0633\u0644\u0627\u062a\u060c \u0623\u0634\u062e\u0627\u0635\u2026',
+    noResults:'\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u062a\u0627\u0626\u062c',
+    langLabel:'\uD83C\uDF10 \u0639\u0631\u0628\u064a',results:'\u0646\u062a\u064a\u062c\u0629',
+  }
+};
+const L=k=>(T[S.lang]||T.en)[k]||T.en[k]||k;
+
+// ═══════════════ STATE ═══════════════
+const S={
+  lang:localStorage.getItem('mzl')||'en',
+  theme:localStorage.getItem('mzt')||'dark',
+  wl:JSON.parse(localStorage.getItem('mzwl')||'[]'),
+  hist:JSON.parse(localStorage.getItem('mzh')||'[]'),
+  cur:null,srvIdx:0,srvTimer:null,
+  curPage:'home',curType:'movie',curGenre:'',curBrowsePage:1,
+  searchOpen:false,_st:null,
+};
+
+// ═══════════════ SAFE HELPERS ═══════════════
+const $=id=>document.getElementById(id);
+const setT=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+const setH=(id,v)=>{const e=$(id);if(e)e.innerHTML=v;};
+const getV=(id,d='')=>{const e=$(id);return e?e.value:d;};
+function skel(n){return Array(n).fill(`<div class="skel" style="aspect-ratio:2/3"></div>`).join('');}
+function toast(msg){
+  const t=$('toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ═══════════════ THEME & LANG ═══════════════
+function applyTheme(){
+  const light=S.theme==='light';
+  document.documentElement.setAttribute('data-theme',S.theme);
+  const sw=$('sw-theme');if(sw)sw.classList.toggle('on',light);
+  setT('theme-lbl',light?L('light'):L('dark'));
+  const mb=$('mtheme-btn');
+  if(mb) mb.innerHTML=light
+    ?'<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>'
+    :'<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>';
+}
+function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';localStorage.setItem('mzt',S.theme);applyTheme();}
+
+function applyLang(){
+  const ar=S.lang==='ar';
+  document.documentElement.setAttribute('lang',S.lang);
+  document.body.classList.toggle('ar',ar);
+  setT('sb-browse',L('browse'));setT('sb-home',L('home'));
+  setT('sb-movies',L('movies'));setT('sb-series',L('series'));
+  setT('sb-wl',L('wl'));setT('sb-search',L('search'));setT('sb-switch',L('sw'));
+  setT('bn-home',L('home'));setT('bn-movies',L('movies'));
+  setT('bn-series',L('series'));setT('bn-wl',L('wl'));
+  setT('p-trailer',L('trailer'));setT('p-dl',L('dl'));
+  setT('p-cast',L('cast'));setT('p-more',L('more'));
+  setT('p-ep',L('ep'));setT('prevep',L('prev'));setT('nextep',L('next'));
+  setT('s-cancel',L('cancel'));setT('theme-lbl',S.theme==='light'?L('light'):L('dark'));
+  setT('lang-lbl',L('langLabel'));
+  const si=$('si');if(si)si.placeholder=ar
+    ?'\u0627\u0628\u062d\u062b \u0639\u0646 \u0623\u0641\u0644\u0627\u0645\u060c \u0645\u0633\u0644\u0633\u0644\u0627\u062a\u060c \u0623\u0634\u062e\u0627\u0635\u2026'
+    :'Search movies, shows, people\u2026';
+  const tf=$('sf-type');
+  if(tf){tf.options[0].text=ar?'\u0627\u0644\u0643\u0644':'All';tf.options[1].text=ar?'\u0623\u0641\u0644\u0627\u0645':'Movies';tf.options[2].text=ar?'\u0645\u0633\u0644\u0633\u0644\u0627\u062a':'Series';}
+}
+function toggleLang(){
+  S.lang=S.lang==='en'?'ar':'en';
+  localStorage.setItem('mzl',S.lang);applyLang();
+  if(S.curPage==='home')loadHome();
+  else if(S.curPage==='movies')loadBrowsePage(L('allMovies'),'movie',GM);
+  else if(S.curPage==='tv')loadBrowsePage(L('allSeries'),'tv',GT);
+  else if(S.curPage==='watchlist')renderWatchlist();
+}
+
+// ═══════════════ API ═══════════════
+async function api(ep){
+  const sep=ep.includes('?')?'&':'?';
+  const r=await fetch(`https://api.themoviedb.org/3/${ep}${sep}api_key=${AK}&language=${S.lang}-${S.lang==='ar'?'SA':'US'}`);
+  return r.json();
+}
+async function apiDet(id,type){
+  const r=await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${AK}&language=${S.lang}-${S.lang==='ar'?'SA':'US'}&append_to_response=similar,credits,videos,recommendations`);
+  return r.json();
+}
+
+// ═══════════════ ROUTER ═══════════════
+function showPage(name,param){
+  S.curPage=name;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg=$('pg-'+name);
+  if(pg){pg.classList.add('active');window.scrollTo(0,0);}
+  document.querySelectorAll('.nav-item,.bnav-item').forEach(el=>el.classList.toggle('active',el.dataset.v===name));
+  if(name==='home')loadHome();
+  else if(name==='movies'){S.curBrowsePage=1;S.curGenre='';loadBrowsePage(L('allMovies'),'movie',GM);}
+  else if(name==='tv'){S.curBrowsePage=1;S.curGenre='';loadBrowsePage(L('allSeries'),'tv',GT);}
+  else if(name==='watchlist')renderWatchlist();
+  else if(name==='person')loadPerson(param);
+  else if(name==='cat')loadCat(param);
+}
+
+// ═══════════════ SLIDER ═══════════════
+let slT=null,slI=0,slArr=[];
+function slInit(items){
+  slArr=items;slI=0;slAuto();
+  return `<div class="hero" id="hero" onmouseenter="slStop()" onmouseleave="slAuto()">
+    ${items.map((it,i)=>`<div class="slide${i===0?' on':''}" id="sl${i}">
+      <img class="slide-img" src="${ORIG}${it.backdrop_path||it.poster_path}" alt="" loading="${i===0?'eager':'lazy'}">
+      <div class="slide-fog"></div>
+      <div class="slide-body">
+        <div class="slide-type">${it.media_type==='tv'?L('series'):L('movies')}</div>
+        <h1 class="slide-title">${it.title||it.name}</h1>
+        <div class="slide-pills">
+          <span class="pill gold">\u2605 ${(it.vote_average||0).toFixed(1)}</span>
+          <span class="pill">${(it.release_date||it.first_air_date||'').split('-')[0]}</span>
+          ${it.original_language?`<span class="pill">${it.original_language.toUpperCase()}</span>`:''}
         </div>
-
-        <div class="relative w-full pb-[56.25%] bg-black group">
-            <iframe id="video-frame" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe>
-            <div id="player-loader" class="absolute inset-0 flex items-center justify-center bg-surface z-10"><div class="loader"></div></div>
+        <div class="slide-actions">
+          <button class="btn-watch" onclick="openPlayer(${it.id},'${it.media_type}')">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+            ${S.lang==='ar'?'\u0634\u0627\u0647\u062f':'Watch'}
+          </button>
+          <button class="btn-info" onclick="openPlayer(${it.id},'${it.media_type}')">
+            ${S.lang==='ar'?'\u062a\u0641\u0627\u0635\u064a\u0644':'Info'}
+          </button>
         </div>
+      </div>
+    </div>`).join('')}
+    <button class="hero-nav prev" onclick="slPrev()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
+    <button class="hero-nav next" onclick="slNext()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+    <div class="hero-dots">${items.map((_,i)=>`<button class="dot-btn${i===0?' on':''}" onclick="slGo(${i})"></button>`).join('')}</div>
+  </div>`;
+}
+function slUpd(){
+  document.querySelectorAll('.slide').forEach((e,i)=>e.classList.toggle('on',i===slI));
+  document.querySelectorAll('.dot-btn').forEach((e,i)=>e.classList.toggle('on',i===slI));
+}
+function slNext(){slI=(slI+1)%slArr.length;slUpd();}
+function slPrev(){slI=(slI-1+slArr.length)%slArr.length;slUpd();}
+function slGo(i){slI=i;slUpd();}
+function slAuto(){slStop();slT=setInterval(slNext,6000);}
+function slStop(){if(slT){clearInterval(slT);slT=null;}}
 
-        <div class="p-5 space-y-6 pb-24">
-            <div class="flex gap-2">
-                <button onclick="app.player.playTrailer()" class="flex-1 py-3 bg-white text-black rounded-xl font-bold flex items-center justify-center gap-2"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg> Trailer</button>
-                <button onclick="app.player.download()" class="flex-1 py-3 bg-white/10 text-white rounded-xl font-bold flex items-center justify-center gap-2">Download</button>
-            </div>
-
-            <div id="tv-selectors" class="hidden space-y-3 p-4 bg-white/5 rounded-xl border border-white/10">
-                <select id="season-select" class="bg-black border border-white/20 rounded-lg p-2.5 text-sm w-full outline-none text-white"></select>
-                <select id="episode-select" class="bg-black border border-white/20 rounded-lg p-2.5 text-sm w-full outline-none text-white"></select>
-                <div class="flex gap-2">
-                    <button id="prev-ep" class="flex-1 py-2 bg-white/5 rounded-lg text-xs font-bold disabled:opacity-30">Previous</button>
-                    <button id="next-ep" class="flex-1 py-2 bg-white/5 rounded-lg text-xs font-bold disabled:opacity-30">Next Episode</button>
-                </div>
-            </div>
-
-            <div>
-                <p class="text-xs text-gray-400 uppercase font-bold mb-2">Sources</p>
-                <div class="flex flex-wrap gap-2" id="server-list"></div>
-            </div>
-
-            <div id="cast-section" class="space-y-3">
-                <h3 class="text-sm font-bold uppercase text-gray-400">Cast</h3>
-                <div id="cast-list" class="flex gap-3 overflow-x-auto pb-2"></div>
-            </div>
-
-            <div>
-                <div class="flex items-center gap-3 mb-3">
-                    <span id="meta-year" class="text-xs font-bold px-2 py-0.5 bg-white/10 rounded"></span>
-                    <span id="meta-rating" class="text-xs font-bold text-yellow-500">★ <span></span></span>
-                    <span id="meta-runtime" class="text-xs font-bold text-gray-400"></span>
-                </div>
-                <p id="meta-overview" class="text-gray-400 text-sm leading-relaxed"></p>
-            </div>
-            <div id="similar-grid" class="grid grid-cols-3 gap-3"></div>
-        </div>
+// ═══════════════ CARD ═══════════════
+function card(it,cls='csm',isH=false){
+  const type=it.media_type||(it.title?'movie':'tv');
+  const yr=(it.release_date||it.first_air_date||'').split('-')[0];
+  const safe=(it.title||it.name||'').replace(/"/g,'&quot;');
+  return `<div class="card ${cls}" onclick="openPlayer(${it.id},'${type}')" tabindex="0" role="button" aria-label="${safe}">
+    <div class="card-img">
+      <img src="${it.poster_path?IMG+it.poster_path:'https://placehold.co/300x450/141428/555?text=?'}" alt="${safe}" loading="lazy" decoding="async">
+      <div class="card-overlay"><div class="card-play"><svg width="12" height="12" fill="white" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg></div></div>
+      ${type==='tv'?`<div class="card-badge">${L('series')}</div>`:''}
+      ${it.vote_average?`<div class="card-score">\u2605 ${it.vote_average.toFixed(1)}</div>`:''}
+      ${isH?`<div class="card-prog" style="width:${30+it.id%48}%"></div>`:''}
     </div>
+    <div class="card-body">
+      <div class="card-title">${it.title||it.name||''}</div>
+      ${yr?`<div class="card-year">${yr}</div>`:''}
+    </div>
+  </div>`;
+}
 
-    <script>
-        const API_KEY = '290474c6946149a9f13fc82b72ec5274';
-        const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-        const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
-        
-        const SERVERS = [
-            { name: "VidSrc 1", url: "https://vidsrc.xyz/embed/movie/{id}", tv: "https://vidsrc.xyz/embed/tv/{id}/{s}/{e}" },
-            { name: "VidSrc 2", url: "https://vidsrc.to/embed/movie/{id}", tv: "https://vidsrc.to/embed/tv/{id}/{s}/{e}" },
-            { name: "VidSrc (VIP)", url: "https://vidsrc.vip/embed/movie/{id}", tv: "https://vidsrc.vip/embed/tv/{id}/{s}/{e}" },
-            { name: "VidLink", url: "https://vidlink.pro/movie/{id}", tv: "https://vidlink.pro/tv/{id}/{s}/{e}" },
-            { name: "SuperEmbed", url: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", tv: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&s={s}&e={e}" }
-        ];
+// ═══════════════ HOME ═══════════════
+async function loadHome(){
+  slStop();
+  const vc=$('vc-home');
+  vc.innerHTML='<div class="loader-wrap"><div class="spinner"></div></div>';
+  const [tr,kd,hi,an,mv,tu,ar,hw]=await Promise.all([
+    api('trending/all/day?'),
+    api('discover/tv?with_original_language=ko&sort_by=popularity.desc&'),
+    api('discover/movie?with_original_language=hi&sort_by=popularity.desc&'),
+    api('discover/tv?with_genres=16&sort_by=popularity.desc&'),
+    api('movie/now_playing?'),
+    api('discover/tv?with_original_language=tr&sort_by=popularity.desc&'),
+    api('discover/movie?with_original_language=ar&sort_by=popularity.desc&'),
+    api('discover/movie?with_original_language=en&sort_by=popularity.desc&vote_count.gte=100&'),
+  ]);
+  const hero=slInit(tr.results.filter(i=>i.backdrop_path||i.poster_path).slice(0,8));
+  const secs=[
+    {key:'contW',items:S.hist,isH:true},
+    {key:'trending',items:tr.results,cat:'trending'},
+    {key:'nowplay',items:mv.results,cat:'nowplay'},
+    {key:'hollywood',items:hw.results,cat:'hollywood'},
+    {key:'arabic',items:ar.results,cat:'arabic'},
+    {key:'turkish',items:tu.results,cat:'turkish'},
+    {key:'kdrama',items:kd.results,cat:'kdrama'},
+    {key:'bollywood',items:hi.results,cat:'bollywood'},
+    {key:'anime',items:an.results,cat:'anime'},
+  ].filter(s=>s.items&&s.items.length);
+  vc.innerHTML=`${hero}<div class="content fade-up">
+    <div class="section">
+      <div class="section-head"><div class="section-title">${L('cats')}</div></div>
+      <div class="hs">${CATS.map(c=>`<div class="cat-chip" onclick="showPage('cat','${c.key}')"><span class="cat-emoji">${c.emoji}</span><span class="cat-label">${c[S.lang]||c.en}</span></div>`).join('')}</div>
+    </div>
+    ${secs.map(s=>`<div class="section">
+      <div class="section-head">
+        <div class="section-title">${L(s.key)}</div>
+        ${s.cat?`<button class="see-all" onclick="showPage('cat','${s.cat}')">${L('seeAll')}</button>`:''}
+      </div>
+      <div class="hs">${s.items.map(i=>card(i,'csm',s.isH)).join('')}</div>
+    </div>`).join('')}
+  </div>`;
+}
 
-        const GENRES = [
-            {id: 28, name: "Action"}, {id: 35, name: "Comedy"}, {id: 18, name: "Drama"}, 
-            {id: 27, name: "Horror"}, {id: 10749, name: "Romance"}, {id: 878, name: "Sci-Fi"}
-        ];
+// ═══════════════ BROWSE ═══════════════
+function loadBrowsePage(title,type,genres){
+  const vcId=type==='movie'?'vc-movies':'vc-tv';
+  $(`${vcId}`).innerHTML=`<div class="page-top fade-up">
+    <div class="page-heading">${title}</div>
+    <div class="genre-bar" id="gf-${type}">
+      ${genres.map(g=>`<button class="genre-btn${g.id===''?' on':''}" onclick="filterBrowse('${type}','${g.id}',this)">${g.n}</button>`).join('')}
+    </div>
+  </div>
+  <div class="sort-strip">
+    <span class="sort-label">${S.lang==='ar'?'\u062a\u0631\u062a\u064a\u0628:':'Sort:'}</span>
+    <select class="sort-select" id="sortsel-${type}" onchange="sortBrowse('${type}',this.value)">
+      <option value="popularity.desc">${S.lang==='ar'?'\u0627\u0644\u0623\u0643\u062b\u0631 \u0634\u0639\u0628\u064a\u0629':'Most Popular'}</option>
+      <option value="vote_average.desc">${S.lang==='ar'?'\u0627\u0644\u0623\u0639\u0644\u0649 \u062a\u0642\u064a\u064a\u0645\u0627\u064b':'Top Rated'}</option>
+      <option value="release_date.desc">${S.lang==='ar'?'\u0627\u0644\u0623\u062d\u062f\u062b':'Newest'}</option>
+    </select>
+  </div>
+  <div class="content-grid" id="bg-${type}">${skel(12)}</div>
+  <button class="load-more-btn" onclick="loadMoreBrowse('${type}')">
+    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    ${L('loadMore')}
+  </button>`;
+  loadBrowse(type,'','popularity.desc',1,true);
+}
+async function filterBrowse(type,gid,btn){
+  S.curGenre=gid;S.curBrowsePage=1;
+  document.querySelectorAll(`#gf-${type} .genre-btn`).forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  await loadBrowse(type,gid,$(`sortsel-${type}`)?.value||'popularity.desc',1,true);
+}
+async function sortBrowse(type,sort){S.curBrowsePage=1;await loadBrowse(type,S.curGenre,sort,1,true);}
+async function loadBrowse(type,gid,sort,page,replace){
+  const g=$(`bg-${type}`);if(!g)return;
+  if(replace)g.innerHTML=skel(12);
+  const ep=gid?`discover/${type}?with_genres=${gid}&sort_by=${sort}&page=${page}&vote_count.gte=20&`:`${type}/popular?page=${page}&`;
+  const data=await api(ep);
+  const html=data.results.filter(i=>i.poster_path).map(i=>card(i,'cgc')).join('');
+  if(replace)g.innerHTML=html;else g.innerHTML+=html;
+}
+async function loadMoreBrowse(type){
+  S.curBrowsePage++;
+  const sort=$(`sortsel-${type}`)?.value||'popularity.desc';
+  await loadBrowse(type,S.curGenre,sort,S.curBrowsePage,false);
+}
 
-        const app = {
-            state: { 
-                currentView: 'home',
-                currentData: null, 
-                lang: localStorage.getItem('lang') || 'en',
-                watchlist: JSON.parse(localStorage.getItem('watchlist') || '[]'),
-                history: JSON.parse(localStorage.getItem('history') || '[]'),
-                searchState: { query: '', page: 1, total_pages: 1, loading: false }
-            },
+// ═══════════════ CATEGORY ═══════════════
+async function loadCat(key){
+  const cat=CATS.find(c=>c.key===key);if(!cat)return;
+  const vc=$('vc-cat');
+  vc.innerHTML='<div class="loader-wrap"><div class="spinner"></div></div>';
+  const data=await api(cat.ep);
+  vc.innerHTML=`<div style="padding-top:64px" class="fade-up">
+    <div class="page-top" style="padding-top:14px">
+      <div style="font-size:38px;margin-bottom:6px">${cat.emoji}</div>
+      <div class="page-heading">${cat[S.lang]||cat.en}</div>
+    </div>
+    <div class="content-grid" id="catg-${key}">${data.results.filter(i=>i.poster_path).map(i=>card(i,'cgc')).join('')}</div>
+    <button class="load-more-btn" id="cat-lm-${key}" onclick="loadMoreCat('${key}',2)">${L('loadMore')}</button>
+  </div>`;
+}
+async function loadMoreCat(key,page){
+  const cat=CATS.find(c=>c.key===key);if(!cat)return;
+  const sep=cat.ep.includes('?')?'&':'?';
+  const data=await api(`${cat.ep}${sep}page=${page}`);
+  const g=$(`catg-${key}`);
+  if(g)g.innerHTML+=data.results.filter(i=>i.poster_path).map(i=>card(i,'cgc')).join('');
+  const btn=$(`cat-lm-${key}`);
+  if(btn)btn.setAttribute('onclick',`loadMoreCat('${key}',${page+1})`);
+}
 
-            init: () => {
-                if(app.state.lang === 'ar') document.body.classList.add('rtl');
-                app.router.go('home');
-                
-                // Window Scroll Listener for Infinite Scroll on Search Page
-                window.addEventListener('scroll', () => {
-                    if (app.state.currentView === 'search') {
-                        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-                            app.ui.loadMoreSearch();
-                        }
-                    }
-                });
-            },
+// ═══════════════ WATCHLIST ═══════════════
+function renderWatchlist(){
+  const vc=$('vc-watchlist');
+  vc.innerHTML=`<div class="wl-top fade-up">
+    <div class="page-heading">${L('wl')}</div>
+    <div class="wl-stats">
+      <div class="stat-box"><div class="stat-num">${S.wl.length}</div><div class="stat-lbl">${L('saved')}</div></div>
+      <div class="stat-box"><div class="stat-num">${S.hist.length}</div><div class="stat-lbl">${L('watched')}</div></div>
+    </div>
+  </div>
+  ${S.wl.length?`<div class="wl-grid">${S.wl.map(i=>card(i,'cgc')).join('')}</div>`:`
+    <div class="wl-empty">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+      <h3>${L('noSaved')}</h3><p>${L('noSavedTxt')}</p>
+    </div>`}
+  ${S.hist.length?`<div class="section" style="margin-top:24px">
+    <div class="section-head"><div class="section-title">${L('history')}</div></div>
+    <div class="hs">${S.hist.map(i=>card(i,'csm',true)).join('')}</div>
+  </div>`:''}`;
+}
 
-            slider: {
-                timer: null,
-                index: 0,
-                items: [],
-                init: (items) => {
-                    app.slider.items = items;
-                    app.slider.index = 0;
-                    app.slider.startAuto();
-                    return app.slider.renderHTML();
-                },
-                renderHTML: () => {
-                    const slides = app.slider.items.map((item, i) => `
-                        <div class="slide ${i === 0 ? 'active' : ''}" id="slide-${i}">
-                            <img src="${IMG_ORIGINAL}${item.backdrop_path || item.poster_path}" class="w-full h-full object-cover opacity-60">
-                            <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
-                            <div class="absolute bottom-0 left-0 w-full p-6 pb-12 md:pb-6 z-20 pointer-events-none">
-                                <h1 class="text-3xl md:text-5xl font-black mb-2 leading-tight drop-shadow-lg max-w-xl text-white">${item.title || item.name}</h1>
-                                <div class="flex items-center gap-3 mb-4 text-sm font-medium">
-                                    <span class="text-brand font-bold">${(item.vote_average || 0).toFixed(1)} ★</span>
-                                    <span class="text-gray-300">${(item.release_date || item.first_air_date || '').split('-')[0]}</span>
-                                </div>
-                                <button onclick="app.player.open(${item.id}, '${item.media_type || (item.title ? 'movie' : 'tv')}')" class="bg-brand hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-red-900/20 transform active:scale-95 transition pointer-events-auto">Watch Now</button>
-                            </div>
-                        </div>
-                    `).join('');
+// ═══════════════ PERSON ═══════════════
+async function loadPerson(id){
+  const vc=$('vc-person');
+  vc.innerHTML='<div class="loader-wrap"><div class="spinner"></div></div>';
+  const [p,cr]=await Promise.all([api(`person/${id}?`),api(`person/${id}/combined_credits?`)]);
+  const works=cr.cast.filter(i=>i.poster_path).sort((a,b)=>b.popularity-a.popularity);
+  vc.innerHTML=`<div class="person-hero fade-up">
+    <img class="person-av" src="${p.profile_path?IMG+p.profile_path:'https://placehold.co/112x112/141428/555?text=?'}" alt="${p.name}">
+    <div>
+      <div class="person-name">${p.name}</div>
+      <div class="person-tags">
+        ${p.known_for_department?`<span class="person-tag">${p.known_for_department}</span>`:''}
+        ${p.birthday?`<span class="person-tag">🎂 ${p.birthday}</span>`:''}
+        ${p.place_of_birth?`<span class="person-tag">📍 ${p.place_of_birth}</span>`:''}
+      </div>
+      ${p.biography?`<p class="person-bio">${p.biography}</p>`:''}
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-head"><div class="section-title">${L('filmography')} (${works.length})</div></div>
+    <div class="content-grid">${works.slice(0,24).map(i=>card(i,'cgc')).join('')}</div>
+  </div>`;
+}
 
-                    const dots = app.slider.items.map((_, i) => `
-                        <button onclick="app.slider.goTo(${i})" class="slider-dot w-2 h-2 rounded-full bg-white/50 hover:bg-white ${i === 0 ? 'active' : ''}" id="dot-${i}"></button>
-                    `).join('');
+// ═══════════════ PLAYER ═══════════════
+async function openPlayer(id,type){
+  slStop();
+  const m=$('pm');m.classList.remove('gone');
+  const vf=$('vf');vf.onload=null;vf.onerror=null;vf.src='about:blank';
+  const ld=$('ld');if(ld)ld.style.display='flex';
+  setT('ldp',L('srcTry'));setStatus('try',L('srcTry'));
+  const sm=$('srv-manual');if(sm){sm.innerHTML='';sm.classList.remove('on');}
+  const sp=$('src-prog');if(sp){sp.classList.remove('on');sp.querySelector('#src-track').innerHTML='';}
+  m.classList.add('open');
+  // Start video immediately in parallel with metadata
+  S.cur={id,media_type:type};S.srvIdx=0;
+  tryServer();
+  const data=await apiDet(id,type);
+  const wasPlaying=S.srvIdx>0;
+  S.cur={...data,media_type:type};
+  if(!wasPlaying){S.srvIdx=0;tryServer();}
+  setT('ptxt',data.title||data.name);
+  setT('pmttl',data.title||data.name);
+  setT('pov',data.overview||'');
+  const yr=(data.release_date||data.first_air_date||'').split('-')[0];
+  const rt=data.runtime?`${data.runtime}m`:(data.episode_run_time?.[0]?`${data.episode_run_time[0]}m`:'');
+  setH('ppills',`${yr?`<span class="info-pill">${yr}</span>`:''}
+    ${data.vote_average?`<span class="info-pill gold">\u2605 ${data.vote_average.toFixed(1)}</span>`:''}
+    ${rt?`<span class="info-pill">${rt}</span>`:''}
+    ${data.genres?.slice(0,3).map(g=>`<span class="info-pill">${g.name}</span>`).join('')||''}`);
+  refreshWlBtn(id,data);
+  setH('castl',data.credits?.cast?.slice(0,18).map(c=>`
+    <div class="cast-card" onclick="showPage('person',${c.id});closePlayer()">
+      <img class="cast-av" src="${c.profile_path?IMG+c.profile_path:'https://placehold.co/52x52/141428/555?text=?'}" alt="${c.name}" loading="lazy">
+      <div class="cast-name">${c.name}</div>
+      <div class="cast-role">${c.character||''}</div>
+    </div>`).join('')||'');
+  if(!data.adult){
+    S.hist=S.hist.filter(i=>i.id!==id);S.hist.unshift(data);
+    if(S.hist.length>30)S.hist.pop();
+    localStorage.setItem('mzh',JSON.stringify(S.hist));
+  }
+  const sim=(data.similar?.results||data.recommendations?.results||[]).filter(i=>i.poster_path).slice(0,8);
+  setH('siml',sim.map(i=>card(i,'cgc')).join(''));
+  const tc=$('tvctrl');
+  if(type==='tv'){
+    tc.classList.add('on');
+    const ss=$('ssel');
+    ss.innerHTML=data.seasons?.filter(s=>s.season_number>0).map(s=>`<option value="${s.season_number}">Season ${s.season_number}</option>`).join('')||'';
+    ss.onchange=async()=>{
+      const sd=await api(`tv/${id}/season/${ss.value}?`);
+      const es=$('esel');
+      es.innerHTML=sd.episodes?.map(e=>`<option value="${e.episode_number}">Ep ${e.episode_number}: ${e.name}</option>`).join('')||'';
+      es.onchange=()=>{S.srvIdx=0;tryServer();};
+      setupEpNav();S.srvIdx=0;tryServer();
+    };
+    ss.dispatchEvent(new Event('change'));
+  } else {
+    tc.classList.remove('on');
+  }
+  const pb=document.querySelector('.player-body');if(pb)pb.scrollTop=0;
+}
 
-                    return `
-                        <div class="relative w-full h-[65vh] overflow-hidden bg-surface-light group">
-                            <div id="slider-track" class="w-full h-full relative">${slides}</div>
-                            <div class="absolute bottom-4 right-0 left-0 flex justify-center gap-2 z-30">${dots}</div>
-                        </div>
-                    `;
-                },
-                updateClasses: () => {
-                    document.querySelectorAll('.slide').forEach((el, i) => el.classList.toggle('active', i === app.slider.index));
-                    document.querySelectorAll('.slider-dot').forEach((el, i) => el.classList.toggle('active', i === app.slider.index));
-                },
-                startAuto: () => {
-                    clearInterval(app.slider.timer);
-                    app.slider.timer = setInterval(() => {
-                        app.slider.index = (app.slider.index + 1) % app.slider.items.length;
-                        app.slider.updateClasses();
-                    }, 5000);
-                },
-                stop: () => clearInterval(app.slider.timer),
-                goTo: (i) => { app.slider.index = i; app.slider.updateClasses(); }
-            },
+function buildUrl(idx){
+  const d=S.cur;
+  const s=getV('ssel','1'),e=getV('esel','1');
+  const srv=SRVS[idx];if(!srv)return null;
+  return d.media_type==='movie'
+    ?srv.m.replace('{id}',d.id)
+    :srv.tv.replace('{id}',d.id).replace('{s}',s).replace('{e}',e);
+}
+function updateSrcProg(){
+  const sp=$('src-prog');const track=$('src-track');if(!sp||!track)return;
+  sp.classList.add('on');
+  track.innerHTML=SRVS.map((_,i)=>{
+    let cls='src-seg';
+    if(i<S.srvIdx)cls+=' done';
+    else if(i===S.srvIdx)cls+=' live';
+    return `<div class="${cls}" title="${SRVS[i].n}"></div>`;
+  }).join('');
+}
+function tryServer(){
+  clearTimeout(S.srvTimer);updateSrcProg();
+  if(S.srvIdx>=SRVS.length){
+    setStatus('err',L('srcErr'));
+    const ld=$('ld');if(ld)ld.style.display='none';
+    const sm=$('srv-manual');
+    if(sm){
+      sm.innerHTML=`<span style="font-size:11px;color:var(--t2);width:100%">${L('manualSrc')}</span>`
+        +SRVS.map((s,i)=>`<button class="srv-btn" onclick="manualSrv(${i})">${s.n}</button>`).join('');
+      sm.classList.add('on');
+    }
+    document.querySelectorAll('.src-seg:not(.done)').forEach(d=>d.classList.add('fail'));
+    return;
+  }
+  const url=buildUrl(S.srvIdx);if(!url){S.srvIdx++;tryServer();return;}
+  setStatus('try',`${L('srcTry')} — ${SRVS[S.srvIdx].n}`);
+  const ld=$('ld');if(ld)ld.style.display='flex';
+  setT('ldp',`${SRVS[S.srvIdx].n}…`);
+  const f=$('vf');
+  f.onload=null;f.onerror=null;f.src=url;
+  S.srvTimer=setTimeout(()=>{f.onload=null;f.onerror=null;S.srvIdx++;setStatus('try',L('srcFail'));tryServer();},9000);
+  f.onload=()=>{
+    clearTimeout(S.srvTimer);
+    if(ld)ld.style.display='none';
+    setStatus('ok',`${L('srcOk')} — ${SRVS[S.srvIdx].n}`);
+    const segs=document.querySelectorAll('.src-seg');
+    if(segs[S.srvIdx]){segs[S.srvIdx].classList.remove('live');segs[S.srvIdx].classList.add('done');}
+  };
+  f.onerror=()=>{
+    clearTimeout(S.srvTimer);f.onload=null;f.onerror=null;
+    const segs=document.querySelectorAll('.src-seg');
+    if(segs[S.srvIdx])segs[S.srvIdx].classList.add('fail');
+    S.srvIdx++;tryServer();
+  };
+}
+function manualSrv(idx){
+  S.srvIdx=idx;$('srv-manual')?.classList.remove('on');clearTimeout(S.srvTimer);
+  const url=buildUrl(idx);if(!url)return;
+  const ld=$('ld');if(ld)ld.style.display='flex';
+  setT('ldp',`${SRVS[idx].n}…`);setStatus('try',SRVS[idx].n);updateSrcProg();
+  const f=$('vf');f.src=url;
+  f.onload=()=>{if(ld)ld.style.display='none';setStatus('ok',`${L('srcOk')} — ${SRVS[idx].n}`);};
+}
+function setupEpNav(){
+  const es=$('esel');
+  $('prevep').onclick=()=>{if(es.selectedIndex>0){es.selectedIndex--;S.srvIdx=0;tryServer();}};
+  $('nextep').onclick=()=>{if(es.selectedIndex<es.options.length-1){es.selectedIndex++;S.srvIdx=0;tryServer();}};
+}
+function setStatus(st,txt){
+  const dot=$('sdot');if(dot)dot.className='sdot '+st;setT('stxt',txt);
+}
+function playTrailer(){
+  const v=S.cur?.videos?.results?.find(x=>x.type==='Trailer')||S.cur?.videos?.results?.[0];
+  if(v)window.open(`https://youtube.com/watch?v=${v.key}`,'_blank');
+  else toast(L('noTrailer'));
+}
+function dlItem(){
+  window.open(`https://www.google.com/search?q=${encodeURIComponent((S.cur.title||S.cur.name)+' download 1080p')}`,'_blank');
+}
+function refreshWlBtn(id,data){
+  const inWl=S.wl.some(i=>i.id===id);
+  const btn=$('wlbtn');if(!btn)return;
+  btn.innerHTML=inWl
+    ?'<svg width="15" height="15" fill="#E50914" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/></svg>'
+    :'<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>';
+  btn.onclick=()=>toggleWl(data);
+}
+function toggleWl(item){
+  const idx=S.wl.findIndex(i=>i.id===item.id);
+  if(idx>-1){S.wl.splice(idx,1);toast(L('remWl'));}
+  else{S.wl.unshift(item);toast(L('addWl'));}
+  localStorage.setItem('mzwl',JSON.stringify(S.wl));
+  refreshWlBtn(item.id,item);
+}
+function closePlayer(){
+  clearTimeout(S.srvTimer);exitFS();
+  const m=$('pm');m.classList.remove('open');
+  setTimeout(()=>{m.classList.add('gone');$('vf').src='about:blank';},340);
+}
 
-            router: {
-                go: async (view, param) => {
-                    app.state.currentView = view;
-                    app.slider.stop();
-                    document.querySelectorAll('.nav-item, .nav-btn').forEach(el => el.classList.toggle('text-brand', el.dataset.target === view));
-                    const container = document.getElementById('view-container');
-                    window.scrollTo(0,0);
-                    
-                    if(view === 'home') {
-                        container.innerHTML = '<div class="h-96 flex items-center justify-center"><div class="loader"></div></div>';
-                        const [trending, kdrama, hindi, anime, movies, turkish, arabic, hollywood] = await Promise.all([
-                            app.api.fetch(`trending/all/day?`),
-                            app.api.fetch(`discover/tv?with_original_language=ko&`),
-                            app.api.fetch(`discover/movie?with_original_language=hi&`),
-                            app.api.fetch(`discover/tv?with_genres=16&`),
-                            app.api.fetch(`movie/now_playing?`),
-                            app.api.fetch(`discover/movie?with_original_language=tr&`),
-                            app.api.fetch(`discover/movie?with_original_language=ar&`),
-                            app.api.fetch(`discover/movie?with_original_language=en&`)
-                        ]);
-                        app.ui.renderHome({
-                            trending: trending.results, 
-                            kdrama: kdrama.results, 
-                            hindi: hindi.results, 
-                            anime: anime.results, 
-                            movies: movies.results,
-                            turkish: turkish.results,
-                            arabic: arabic.results,
-                            hollywood: hollywood.results
-                        });
-                    } else if (view === 'search') {
-                        app.ui.renderSearchPage();
-                    } else if(view === 'watchlist') {
-                        app.ui.renderWatchlist();
-                    } else if(view === 'person') {
-                        app.ui.closePlayer();
-                        container.innerHTML = '<div class="h-96 flex items-center justify-center"><div class="loader"></div></div>';
-                        const [person, credits] = await Promise.all([
-                            app.api.fetch(`person/${param}?`),
-                            app.api.fetch(`person/${param}/combined_credits?`)
-                        ]);
-                        const works = credits.cast.sort((a,b) => b.popularity - a.popularity);
-                        container.innerHTML = `
-                            <div class="pt-24 px-4 pb-10">
-                                <div class="flex flex-col md:flex-row gap-6 mb-8">
-                                    <div class="w-32 h-32 md:w-40 md:h-40 flex-none rounded-full overflow-hidden border-2 border-brand mx-auto md:mx-0">
-                                        <img src="${IMG_BASE}${person.profile_path}" class="w-full h-full object-cover">
-                                    </div>
-                                    <div class="text-center md:text-left">
-                                        <h1 class="text-3xl font-black mb-2">${person.name}</h1>
-                                        <p class="text-gray-400 text-sm line-clamp-2 max-w-xl">${person.biography || 'No biography available.'}</p>
-                                    </div>
-                                </div>
-                                <h3 class="text-xl font-bold mb-4 border-l-4 border-brand pl-3">Filmography</h3>
-                                <div class="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                    ${works.map(i => app.ui.createCard(i, 'w-full')).join('')}
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        app.ui.renderFilterGrid(view === 'movies' ? 'Movies' : 'Series', view === 'movies' ? 'movie' : 'tv');
-                    }
-                }
-            },
+// ═══════════════ FULLSCREEN ═══════════════
+function toggleFS(){
+  const f=$('vf');
+  const reqFS=f.requestFullscreen||f.webkitRequestFullscreen||f.mozRequestFullScreen||f.msRequestFullscreen;
+  if(reqFS&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
+    if(!document.fullscreenElement&&!document.webkitFullscreenElement){reqFS.call(f).catch(()=>toggleCssFS());}
+    else{(document.exitFullscreen||document.webkitExitFullscreen).call(document);}
+    return;
+  }
+  toggleCssFS();
+}
+function toggleCssFS(){
+  const vw=$('vwrap');const on=vw.classList.toggle('fs-on');
+  $('fs-exp').style.display=on?'none':'block';
+  $('fs-col').style.display=on?'block':'none';
+  document.body.style.overflow=on?'hidden':'';
+  if(on){try{screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}
+  else{try{screen.orientation.unlock();}catch(e){}}
+}
+function exitFS(){
+  const vw=$('vwrap');if(vw&&vw.classList.contains('fs-on'))toggleCssFS();
+  if(document.fullscreenElement||document.webkitFullscreenElement){
+    (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+  }
+}
+['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{
+  const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  const e=$('fs-exp'),c=$('fs-col');if(e)e.style.display=on?'none':'block';if(c)c.style.display=on?'block':'none';
+}));
 
-            api: {
-                fetch: async (endpoint) => {
-                    const res = await fetch(`https://api.themoviedb.org/3/${endpoint}api_key=${API_KEY}&language=${app.state.lang}`);
-                    return await res.json();
-                },
-                details: async (id, type) => {
-                    const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=${app.state.lang}&append_to_response=similar,recommendations,credits,videos`);
-                    return await res.json();
-                }
-            },
+// ═══════════════ SEARCH ═══════════════
+function openSearch(){
+  S.searchOpen=true;
+  const p=$('pg-search');p.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>p.classList.add('open')));
+  setTimeout(()=>{const si=$('si');if(si){si.focus();si.select();}},260);
+  renderSrEmpty(L('startSearch'));
+}
+function closeSearch(){
+  S.searchOpen=false;
+  const p=$('pg-search');p.classList.remove('open');
+  setTimeout(()=>{p.style.display='none';},280);
+  const si=$('si');if(si)si.value='';
+}
+function renderSrEmpty(msg){
+  setH('sr',`<div class="sr-empty"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><p>${msg}</p></div>`);
+  const cnt=$('sr-count');if(cnt)cnt.style.display='none';
+}
+function clearFilters(){
+  ['sf-type','sf-genre','sf-sort','sf-from','sf-origlang'].forEach(id=>{
+    const el=$(id);if(!el)return;
+    if(el.tagName==='SELECT')el.value=id==='sf-type'?'multi':id==='sf-sort'?'popularity.desc':'';
+    else el.value='';
+  });
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  const q=getV('si','').trim();
+  if(q)doSearch(q);else renderSrEmpty(L('startSearch'));
+}
+async function applyFilters(){await doSearch(getV('si','').trim());}
 
-            ui: {
-                renderHome: (data) => {
-                    const sliderHTML = app.slider.init(data.trending.slice(0, 6));
-                    const sections = [
-                        { title: "Continue Watching", items: app.state.history, isHistory: true },
-                        { title: "Trending Now", items: data.trending.slice(1) },
-                        { title: "New Movies", items: data.movies },
-                        { title: "Hollywood Hits", items: data.hollywood },
-                        { title: "Turkish Cinema", items: data.turkish },
-                        { title: "Arabic Cinema", items: data.arabic },
-                        { title: "K-Dramas", items: data.kdrama },
-                        { title: "Bollywood", items: data.hindi },
-                        { title: "Anime", items: data.anime }
-                    ];
+async function doSearch(q){
+  const res=$('sr'),cntEl=$('sr-count');
+  const type=getV('sf-type','multi'),genre=getV('sf-genre','');
+  const sort=getV('sf-sort','popularity.desc');
+  const from=getV('sf-from',''),lang=getV('sf-origlang','');
+  $('chip-type')?.classList.toggle('on',type!=='multi');
+  $('chip-genre')?.classList.toggle('on',!!genre);
+  $('chip-lang')?.classList.toggle('on',!!lang);
+  $('chip-year')?.classList.toggle('on',!!from);
+  if(res)res.innerHTML='<div class="sr-empty"><div class="spinner" style="margin:0 auto"></div></div>';
+  if(cntEl)cntEl.style.display='none';
+  let results=[];
+  try{
+    if(genre||from||lang||!q){
+      const dt=type==='multi'?'movie':type;
+      let ep=`discover/${dt}?sort_by=${sort}&`;
+      if(genre)ep+=`with_genres=${genre}&`;if(lang)ep+=`with_original_language=${lang}&`;
+      if(from)ep+=`primary_release_date.gte=${from}-01-01&first_air_date.gte=${from}-01-01&`;
+      ep+='vote_count.gte=5&';
+      const d=await api(ep);results=d.results||[];
+      if(type==='multi'){
+        let ep2=`discover/tv?sort_by=${sort}&`;
+        if(genre)ep2+=`with_genres=${genre}&`;if(lang)ep2+=`with_original_language=${lang}&`;
+        if(from)ep2+=`first_air_date.gte=${from}-01-01&`;
+        const d2=await api(ep2);
+        results=[...results,...(d2.results||[])].sort((a,b)=>b.popularity-a.popularity);
+      }
+    }else{
+      const ep=type==='multi'?`search/multi?query=${encodeURIComponent(q)}&`:`search/${type}?query=${encodeURIComponent(q)}&`;
+      const d=await api(ep);results=d.results||[];
+      if(from)results=results.filter(i=>parseInt((i.release_date||i.first_air_date||'0').split('-')[0])>=parseInt(from));
+      if(lang)results=results.filter(i=>i.original_language===lang);
+      if(genre)results=results.filter(i=>i.genre_ids?.includes(parseInt(genre)));
+    }
+  }catch(e){console.error(e);}
+  results=results.filter(i=>i.poster_path||i.profile_path);
+  if(!results.length){renderSrEmpty(L('noResults'));return;}
+  if(cntEl){cntEl.style.display='block';cntEl.textContent=`${results.length} ${L('results')}`;}
+  const people=results.filter(i=>i.media_type==='person'||(!i.title&&!i.name&&i.profile_path));
+  const titles=results.filter(i=>i.media_type!=='person'&&(i.title||i.name));
+  let html='';
+  if(titles.length){
+    if(people.length)html+=`<div class="sr-group-label">${L('movies')} & ${L('series')}</div>`;
+    html+=titles.map(i=>{
+      const type=i.media_type||(i.title?'movie':'tv');
+      const yr=(i.release_date||i.first_air_date||'').split('-')[0];
+      const safe=(i.title||i.name||'').replace(/"/g,'&quot;');
+      return `<div class="sr-row" role="button" tabindex="0"
+        onclick="openPlayer(${i.id},'${type}');closeSearch()"
+        onkeydown="if(event.key==='Enter')this.click()">
+        <img class="sr-poster" src="${i.poster_path?IMG+i.poster_path:'https://placehold.co/46x69/141428/444?text=?'}" alt="${safe}" loading="lazy" decoding="async">
+        <div class="sr-info">
+          <div class="sr-name">${i.title||i.name||''}</div>
+          <div class="sr-metas">
+            ${yr?`<span class="sr-year">${yr}</span>`:''}
+            <span class="sr-tag ${type}">${type==='tv'?L('series'):L('movies')}</span>
+            ${i.vote_average&&i.vote_average>0?`<span class="sr-score"><svg width="9" height="9" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>${i.vote_average.toFixed(1)}</span>`:''}
+          </div>
+        </div>
+        <button class="sr-play" tabindex="-1" aria-hidden="true">
+          <svg fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+  }
+  if(people.length){
+    if(titles.length)html+=`<div class="sr-group-label">People</div>`;
+    html+=people.map(i=>`<div class="sr-person" role="button" tabindex="0"
+      onclick="showPage('person',${i.id});closeSearch()"
+      onkeydown="if(event.key==='Enter')this.click()">
+      <img class="sr-av" src="${i.profile_path?IMG+i.profile_path:'https://placehold.co/46x46/141428/444?text=?'}" alt="${(i.name||'').replace(/"/g,'&quot;')}" loading="lazy">
+      <div>
+        <div class="sr-pname">${i.name||''}</div>
+        <div class="sr-pdept">${i.known_for_department||'Actor'}</div>
+      </div>
+    </div>`).join('');
+  }
+  if(res){res.innerHTML=html;res.scrollTop=0;}
+}
 
-                    document.getElementById('view-container').innerHTML = `
-                        ${sliderHTML}
-                        <div class="space-y-8 p-4 -mt-6 relative z-10">
-                            ${sections.map(sec => (sec.items && sec.items.length > 0) ? `
-                                <div>
-                                    <h3 class="text-lg font-bold mb-3 border-l-4 border-brand pl-3">${sec.title}</h3>
-                                    <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-                                        ${sec.items.map(i => app.ui.createCard(i, 'w-36', sec.isHistory)).join('')}
-                                    </div>
-                                </div>
-                            ` : '').join('')}
-                        </div>
-                    `;
-                },
-                renderFilterGrid: async (title, type) => {
-                    const container = document.getElementById('view-container');
-                    container.innerHTML = `
-                        <div class="pt-20 px-4">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-2xl font-bold">${title}</h2>
-                                <select onchange="app.ui.applyFilter('${type}', this.value)" class="bg-white/10 border-none rounded-lg text-xs px-3 py-2 outline-none text-white">
-                                    <option value="">All Genres</option>
-                                    ${GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div id="grid-content" class="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-                        </div>
-                    `;
-                    app.ui.applyFilter(type, '');
-                },
-                applyFilter: async (type, genreId) => {
-                    const grid = document.getElementById('grid-content');
-                    grid.innerHTML = Array(12).fill('<div class="aspect-[2/3] rounded-xl skeleton"></div>').join('');
-                    const endpoint = genreId ? `discover/${type}?with_genres=${genreId}&` : `${type}/popular?`;
-                    const data = await app.api.fetch(endpoint);
-                    grid.innerHTML = data.results.map(i => app.ui.createCard(i, 'w-full')).join('');
-                },
-                renderWatchlist: () => {
-                    const container = document.getElementById('view-container');
-                    container.innerHTML = `
-                        <div class="pt-24 px-4">
-                            <h2 class="text-2xl font-bold mb-6">My List</h2>
-                            ${app.state.watchlist.length ? `
-                                <div class="grid grid-cols-2 xs:grid-cols-3 gap-4">
-                                    ${app.state.watchlist.map(i => app.ui.createCard(i, 'w-full')).join('')}
-                                </div>
-                            ` : `<p class="text-gray-500 text-center mt-20">Your watchlist is empty.</p>`}
-                        </div>
-                    `;
-                },
-                renderSearchPage: () => {
-                    const container = document.getElementById('view-container');
-                    container.innerHTML = `
-                        <div class="pt-24 px-4 min-h-screen">
-                            <div class="relative mb-6">
-                                <input type="text" id="mainSearchInput" placeholder="Search movies, TV shows..." 
-                                    class="w-full bg-white/10 border border-white/10 rounded-xl px-12 py-4 focus:outline-none focus:border-brand text-white placeholder-gray-500 text-lg"
-                                    value="${app.state.searchState.query}"
-                                    autofocus
-                                >
-                                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </div>
-                            
-                            <div id="search-grid" class="grid grid-cols-2 xs:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-10">
-                                </div>
-                            <div id="search-loader" class="hidden py-4 flex justify-center"><div class="loader"></div></div>
-                        </div>
-                    `;
-                    
-                    // Attach listener
-                    let timeout;
-                    const input = document.getElementById('mainSearchInput');
-                    input.focus();
-                    input.addEventListener('input', (e) => {
-                        clearTimeout(timeout);
-                        timeout = setTimeout(() => app.ui.performSearch(e.target.value), 500);
-                    });
+// ═══════════════ INIT ═══════════════
+applyTheme();
+applyLang();
+showPage('home');
 
-                    // If we have previous results, render them
-                    if (app.state.searchState.query) {
-                        app.ui.performSearch(app.state.searchState.query);
-                    }
-                },
-                createCard: (item, width = 'w-36', isHistory = false) => `
-                    <div onclick="app.player.open(${item.id}, '${item.media_type || (item.title ? 'movie' : 'tv')}')" class="flex-none ${width} relative group cursor-pointer">
-                        <div class="aspect-[2/3] rounded-xl overflow-hidden bg-white/5 mb-2 relative">
-                            <img src="${item.poster_path ? IMG_BASE + item.poster_path : 'https://via.placeholder.com/300x450/111/fff?text=No+Image'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy">
-                            ${isHistory ? `<div class="absolute bottom-0 left-0 h-1 bg-brand w-3/4"></div>` : ''}
-                        </div>
-                        <h4 class="text-sm font-medium truncate">${item.title || item.name}</h4>
-                        <span class="text-[10px] text-yellow-500 font-bold">★ ${(item.vote_average || 0).toFixed(1)}</span>
-                    </div>
-                `,
-                performSearch: async (q) => {
-                    if(!q) {
-                        document.getElementById('search-grid').innerHTML = '';
-                        return;
-                    }
-                    // Reset State
-                    app.state.searchState = { query: q, page: 1, total_pages: 1, loading: false };
-                    document.getElementById('search-grid').innerHTML = ''; 
-                    app.ui.loadMoreSearch(); 
-                },
-                loadMoreSearch: async () => {
-                    const { query, page, loading, total_pages } = app.state.searchState;
-                    if(loading || (page > total_pages && page !== 1) || !query) return;
-
-                    app.state.searchState.loading = true;
-                    const loader = document.getElementById('search-loader');
-                    if(loader) loader.classList.remove('hidden');
-
-                    const res = await app.api.fetch(`search/multi?query=${query}&page=${page}&`);
-                    
-                    if(loader) loader.classList.add('hidden');
-                    
-                    if(res.results) {
-                        app.state.searchState.total_pages = res.total_pages;
-                        app.state.searchState.page += 1;
-                        app.state.searchState.loading = false;
-                        
-                        const html = res.results.filter(i => i.poster_path).map(i => app.ui.createCard(i, 'w-full')).join('');
-                        const grid = document.getElementById('search-grid');
-                        if(grid) grid.insertAdjacentHTML('beforeend', html);
-                    }
-                },
-                closePlayer: () => {
-                    const modal = document.getElementById('player-modal');
-                    modal.classList.add('translate-y-full');
-                    setTimeout(() => { modal.classList.add('hidden'); document.getElementById('video-frame').src = ''; }, 300);
-                }
-            },
-
-            player: {
-                open: async (id, type) => {
-                    app.slider.stop();
-                    const modal = document.getElementById('player-modal');
-                    modal.classList.remove('hidden');
-                    setTimeout(() => modal.classList.remove('translate-y-full'), 10);
-                    
-                    const data = await app.api.details(id, type);
-                    app.state.currentData = { ...data, media_type: type };
-                    
-                    document.getElementById('player-title').textContent = data.title || data.name;
-                    document.getElementById('meta-overview').textContent = data.overview;
-                    document.getElementById('meta-year').textContent = (data.release_date || data.first_air_date || '').substring(0,4);
-                    document.getElementById('meta-rating').querySelector('span').textContent = (data.vote_average || 0).toFixed(1);
-                    document.getElementById('meta-runtime').textContent = data.runtime ? `${data.runtime}m` : (data.episode_run_time ? `${data.episode_run_time[0]}m` : '');
-
-                    // Cast Section
-                    document.getElementById('cast-list').innerHTML = data.credits.cast.slice(0, 10).map(c => `
-                        <button onclick="app.router.go('person', ${c.id})" class="flex-none w-16 text-center group">
-                            <img src="${c.profile_path ? IMG_BASE + c.profile_path : 'https://via.placeholder.com/50x50/111/fff?text=?'}" class="w-12 h-12 rounded-full object-cover mx-auto bg-white/10 group-hover:border-2 border-brand transition-all">
-                            <p class="text-[9px] mt-1 truncate text-gray-400 group-hover:text-white">${c.name}</p>
-                        </button>
-                    `).join('');
-
-                    const watchBtn = document.getElementById('add-watchlist-btn');
-                    const inWatchlist = app.state.watchlist.some(i => i.id === id);
-                    watchBtn.innerHTML = inWatchlist ? `<svg class="w-5 h-5 text-brand" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>` : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>`;
-                    watchBtn.onclick = () => app.player.toggleWatchlist(data);
-
-                    app.player.addToHistory(data);
-
-                    document.getElementById('server-list').innerHTML = SERVERS.map((s, idx) => `
-                        <button onclick="app.player.play(${idx})" class="srv-btn px-4 py-2 rounded-lg bg-white/5 text-xs font-bold transition hover:bg-white/10">
-                            ${s.name}
-                        </button>
-                    `).join('');
-
-                    if(type === 'tv') {
-                        document.getElementById('tv-selectors').classList.remove('hidden');
-                        const sSelect = document.getElementById('season-select');
-                        sSelect.innerHTML = data.seasons.filter(s => s.season_number > 0).map(s => `<option value="${s.season_number}">Season ${s.season_number}</option>`).join('');
-                        sSelect.onchange = async () => {
-                            const sData = await app.api.fetch(`tv/${id}/season/${sSelect.value}?`);
-                            const eSelect = document.getElementById('episode-select');
-                            eSelect.innerHTML = sData.episodes.map(e => `<option value="${e.episode_number}">Ep ${e.episode_number}: ${e.name}</option>`).join('');
-                            eSelect.onchange = () => app.player.play(0);
-                            app.player.play(0);
-                        };
-                        sSelect.dispatchEvent(new Event('change'));
-                    } else {
-                        document.getElementById('tv-selectors').classList.add('hidden');
-                        app.player.play(0);
-                    }
-                    document.getElementById('similar-grid').innerHTML = data.similar.results.slice(0, 6).map(i => app.ui.createCard(i, 'w-full')).join('');
-                },
-                play: (idx) => {
-                    document.querySelectorAll('.srv-btn').forEach((b, i) => b.classList.toggle('bg-brand', i === idx));
-                    const data = app.state.currentData;
-                    const s = document.getElementById('season-select').value || 1;
-                    const e = document.getElementById('episode-select').value || 1;
-                    let url = data.media_type === 'movie' ? SERVERS[idx].url : SERVERS[idx].tv;
-                    url = url.replace('{id}', data.id).replace('{s}', s).replace('{e}', e);
-                    document.getElementById('player-loader').classList.remove('hidden');
-                    const frame = document.getElementById('video-frame');
-                    frame.src = url;
-                    frame.onload = () => document.getElementById('player-loader').classList.add('hidden');
-                },
-                playTrailer: () => {
-                    const video = app.state.currentData.videos.results.find(v => v.type === 'Trailer') || app.state.currentData.videos.results[0];
-                    if(video) window.open(`https://www.youtube.com/watch?v=${video.key}`, '_blank');
-                },
-                toggleWatchlist: (item) => {
-                    const idx = app.state.watchlist.findIndex(i => i.id === item.id);
-                    if(idx > -1) app.state.watchlist.splice(idx, 1);
-                    else app.state.watchlist.unshift(item);
-                    localStorage.setItem('watchlist', JSON.stringify(app.state.watchlist));
-                    app.player.open(item.id, item.media_type || (item.title ? 'movie' : 'tv'));
-                },
-                addToHistory: (item) => {
-                    app.state.history = app.state.history.filter(i => i.id !== item.id);
-                    app.state.history.unshift(item);
-                    if(app.state.history.length > 20) app.state.history.pop();
-                    localStorage.setItem('history', JSON.stringify(app.state.history));
-                },
-                download: () => {
-                    const data = app.state.currentData;
-                    window.open(`https://www.google.com/search?q=${encodeURIComponent(data.title || data.name)} index of`, '_blank');
-                }
-            },
-            settings: {
-                toggleLang: () => {
-                    localStorage.setItem('lang', app.state.lang === 'en' ? 'ar' : 'en');
-                    location.reload();
-                }
-            }
-        };
-        app.init();
-    </script>
+// Search input
+const _si=$('si');
+if(_si){
+  let _lq='';
+  _si.addEventListener('input',e=>{
+    const q=e.target.value.trim();
+    if(q===_lq)return;_lq=q;
+    clearTimeout(S._st);
+    if(q.length>=1)S._st=setTimeout(()=>doSearch(q),260);
+    else renderSrEmpty(L('startSearch'));
+  });
+  _si.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closeSearch();
+    if(e.key==='Enter'){clearTimeout(S._st);doSearch(_si.value.trim());}
+  });
+}
+window.addEventListener('popstate',()=>{if(S.searchOpen)closeSearch();});
+</script>
 </body>
 </html>
