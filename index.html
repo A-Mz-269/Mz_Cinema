@@ -991,7 +991,6 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
 </head>
 <body>
 
-<!-- ═══════ SIDEBAR ═══════ -->
 <aside class="sidebar">
   <div class="sb-logo" onclick="showPage('home')">
     <div class="sb-logo-text"><em>Mz</em>Cinema</div>
@@ -1030,7 +1029,6 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
   </div>
 </aside>
 
-<!-- ═══════ MOBILE HEADER ═══════ -->
 <header class="mhdr">
   <div class="m-logo" onclick="showPage('home')">
     <em>Mz</em>Cinema<span class="m-logo-dot"></span>
@@ -1051,7 +1049,6 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
   </div>
 </header>
 
-<!-- ═══════ PAGES ═══════ -->
 <main id="app">
   <div class="page active" id="pg-home"><div id="vc-home"></div></div>
   <div class="page" id="pg-movies"><div id="vc-movies"></div></div>
@@ -1061,7 +1058,6 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
   <div class="page" id="pg-cat"><div id="vc-cat"></div></div>
 </main>
 
-<!-- ═══════ BOTTOM NAV ═══════ -->
 <nav class="bnav">
   <button class="bnav-item active" data-v="home" onclick="showPage('home')">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -1081,7 +1077,6 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
   </button>
 </nav>
 
-<!-- ═══════ SEARCH ═══════ -->
 <div id="pg-search">
   <div class="search-header">
     <button class="icon-btn" onclick="closeSearch()" style="flex:none">
@@ -1147,7 +1142,6 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
   <div id="sr" role="list" aria-live="polite"></div>
 </div>
 
-<!-- ═══════ PLAYER ═══════ -->
 <div id="pm" class="gone">
   <div class="player-bar">
     <button class="icon-btn" onclick="closePlayer()">
@@ -1159,7 +1153,7 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
     </div>
   </div>
   <div class="vwrap" id="vwrap">
-    <iframe id="vf" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write"></iframe>
+    <iframe id="vf" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write"></iframe>
     <div id="ld"><div class="spinner"></div><p id="ldp">Finding best source…</p></div>
     <button id="fs-btn" onclick="toggleFS()" title="Fullscreen">
       <svg id="fs-exp" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
@@ -1222,7 +1216,7 @@ const ORIG = 'https://image.tmdb.org/t/p/original';
 
 const SRVS=[
   {n:'VidSrc ★',   m:'https://vidsrc.vip/embed/movie/{id}',                 tv:'https://vidsrc.vip/embed/tv/{id}/{s}/{e}'},
-  {n:'VidLink ★',  m:'https://vidlink.pro/movie/{id}?sub=ar&autoplay=1',    tv:'https://vidlink.pro/tv/{id}/{s}/{e}?sub=ar&autoplay=1'},
+  {n:'VidLink ★',  m:'https://vidlink.pro/movie/{id}?sub=ar',               tv:'https://vidlink.pro/tv/{id}/{s}/{e}?sub=ar'},
   {n:'VidSrc.to',  m:'https://vidsrc.to/embed/movie/{id}',                  tv:'https://vidsrc.to/embed/tv/{id}/{s}/{e}'},
   {n:'EmbedSu ★',  m:'https://embed.su/embed/movie/{id}',                   tv:'https://embed.su/embed/tv/{id}/{s}/{e}'},
   {n:'AutoEmbed ★',m:'https://player.autoembed.cc/embed/movie/{id}',        tv:'https://player.autoembed.cc/embed/tv/{id}/{s}/{e}'},
@@ -1430,7 +1424,7 @@ function slStop(){if(slT){clearInterval(slT);slT=null;}}
 function card(it,cls='csm',isH=false){
   const type=it.media_type||(it.title?'movie':'tv');
   const yr=(it.release_date||it.first_air_date||'').split('-')[0];
-  const safe=(it.title||it.name||'').replace(/"/g,'&quot;');
+  const safe=(it.title||it.name||'').replace(/"/g,'"');
   return `<div class="card ${cls}" onclick="openPlayer(${it.id},'${type}')" tabindex="0" role="button" aria-label="${safe}">
     <div class="card-img">
       <img src="${it.poster_path?IMG+it.poster_path:'https://placehold.co/300x450/141428/555?text=?'}" alt="${safe}" loading="lazy" decoding="async">
@@ -1762,11 +1756,14 @@ function closePlayer(){
 
 // ═══════════════ FULLSCREEN ═══════════════
 function toggleFS(){
-  const f=$('vf');
+  const f=$('vwrap');
   const reqFS=f.requestFullscreen||f.webkitRequestFullscreen||f.mozRequestFullScreen||f.msRequestFullscreen;
   if(reqFS&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
     if(!document.fullscreenElement&&!document.webkitFullscreenElement){reqFS.call(f).catch(()=>toggleCssFS());}
-    else{(document.exitFullscreen||document.webkitExitFullscreen).call(document);}
+    else{
+        if(document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
     return;
   }
   toggleCssFS();
@@ -1782,7 +1779,8 @@ function toggleCssFS(){
 function exitFS(){
   const vw=$('vwrap');if(vw&&vw.classList.contains('fs-on'))toggleCssFS();
   if(document.fullscreenElement||document.webkitFullscreenElement){
-    (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+    if(document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
   }
 }
 ['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{
@@ -1866,7 +1864,7 @@ async function doSearch(q){
     html+=titles.map(i=>{
       const type=i.media_type||(i.title?'movie':'tv');
       const yr=(i.release_date||i.first_air_date||'').split('-')[0];
-      const safe=(i.title||i.name||'').replace(/"/g,'&quot;');
+      const safe=(i.title||i.name||'').replace(/"/g,'"');
       return `<div class="sr-row" role="button" tabindex="0"
         onclick="openPlayer(${i.id},'${type}');closeSearch()"
         onkeydown="if(event.key==='Enter')this.click()">
@@ -1890,7 +1888,7 @@ async function doSearch(q){
     html+=people.map(i=>`<div class="sr-person" role="button" tabindex="0"
       onclick="showPage('person',${i.id});closeSearch()"
       onkeydown="if(event.key==='Enter')this.click()">
-      <img class="sr-av" src="${i.profile_path?IMG+i.profile_path:'https://placehold.co/46x46/141428/444?text=?'}" alt="${(i.name||'').replace(/"/g,'&quot;')}" loading="lazy">
+      <img class="sr-av" src="${i.profile_path?IMG+i.profile_path:'https://placehold.co/46x46/141428/444?text=?'}" alt="${(i.name||'').replace(/"/g,'"')}" loading="lazy">
       <div>
         <div class="sr-pname">${i.name||''}</div>
         <div class="sr-pdept">${i.known_for_department||'Actor'}</div>
