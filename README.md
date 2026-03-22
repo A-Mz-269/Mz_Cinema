@@ -1,4 +1,4 @@
-# \ud83c\udfac Mz Cinema
+# \Mz Cinema
 
 > A full-featured Progressive Web App for streaming movies and TV series \u2014 installable, bilingual, and blazing fast.
 
@@ -141,15 +141,3 @@ You should see `sw.js` listed as **active and running**.
 > \u2139\ufe0f The "SW registration failed (404)" error only appears inside Claude's preview sandbox (`claudeusercontent.com`). It will work correctly on any real deployed host.
 
 ---
-
-### Key Constants
-
-```javascript
-const AK   = '...';                               // TMDB API key
-const IMG  = 'https://image.tmdb.org/t/p/w500';  // Poster images (500px wide)
-const ORIG = 'https://image.tmdb.org/t/p/original'; // Backdrop images (full res)
-```
-
-### LocalStorage Keys
-
-| Key | Content
