@@ -6,9 +6,11 @@
 <meta name="theme-color" content="#08080f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mz Cinema">
 <title>Mz Cinema</title>
-<link rel="manifest" id="mf">
-<script>try{const m={name:"Mz Cinema",short_name:"Mz Cinema",start_url:".",display:"standalone",background_color:"#08080f",theme_color:"#08080f",icons:[{src:"https://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyve4zSgrIbB.jpg",sizes:"512x512",type:"image/jpeg"}]};document.getElementById('mf').setAttribute('href',URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'})));}catch(e){}</script>
+<!-- ✅ FIX 1: Proper manifest link (no more broken blob: URL) -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -1153,7 +1155,14 @@ body.ar .meta-lbl{letter-spacing:0;font-size:10px}
     </div>
   </div>
   <div class="vwrap" id="vwrap">
-    <iframe id="vf" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write"></iframe>
+    <!-- ✅ FIX 2: Full allow attribute enables autoplay + sound in embedded iframes -->
+    <iframe id="vf"
+      allowfullscreen="true"
+      webkitallowfullscreen="true"
+      mozallowfullscreen="true"
+      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-write; microphone; camera"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation">
+    </iframe>
     <div id="ld"><div class="spinner"></div><p id="ldp">Finding best source…</p></div>
     <button id="fs-btn" onclick="toggleFS()" title="Fullscreen">
       <svg id="fs-exp" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
@@ -1424,7 +1433,7 @@ function slStop(){if(slT){clearInterval(slT);slT=null;}}
 function card(it,cls='csm',isH=false){
   const type=it.media_type||(it.title?'movie':'tv');
   const yr=(it.release_date||it.first_air_date||'').split('-')[0];
-  const safe=(it.title||it.name||'').replace(/"/g,'"');
+  const safe=(it.title||it.name||'').replace(/"/g,'&quot;');
   return `<div class="card ${cls}" onclick="openPlayer(${it.id},'${type}')" tabindex="0" role="button" aria-label="${safe}">
     <div class="card-img">
       <img src="${it.poster_path?IMG+it.poster_path:'https://placehold.co/300x450/141428/555?text=?'}" alt="${safe}" loading="lazy" decoding="async">
@@ -1607,7 +1616,6 @@ async function openPlayer(id,type){
   const sm=$('srv-manual');if(sm){sm.innerHTML='';sm.classList.remove('on');}
   const sp=$('src-prog');if(sp){sp.classList.remove('on');sp.querySelector('#src-track').innerHTML='';}
   m.classList.add('open');
-  // Start video immediately in parallel with metadata
   S.cur={id,media_type:type};S.srvIdx=0;
   tryServer();
   const data=await apiDet(id,type);
@@ -1864,7 +1872,7 @@ async function doSearch(q){
     html+=titles.map(i=>{
       const type=i.media_type||(i.title?'movie':'tv');
       const yr=(i.release_date||i.first_air_date||'').split('-')[0];
-      const safe=(i.title||i.name||'').replace(/"/g,'"');
+      const safe=(i.title||i.name||'').replace(/"/g,'&quot;');
       return `<div class="sr-row" role="button" tabindex="0"
         onclick="openPlayer(${i.id},'${type}');closeSearch()"
         onkeydown="if(event.key==='Enter')this.click()">
@@ -1888,7 +1896,7 @@ async function doSearch(q){
     html+=people.map(i=>`<div class="sr-person" role="button" tabindex="0"
       onclick="showPage('person',${i.id});closeSearch()"
       onkeydown="if(event.key==='Enter')this.click()">
-      <img class="sr-av" src="${i.profile_path?IMG+i.profile_path:'https://placehold.co/46x46/141428/444?text=?'}" alt="${(i.name||'').replace(/"/g,'"')}" loading="lazy">
+      <img class="sr-av" src="${i.profile_path?IMG+i.profile_path:'https://placehold.co/46x46/141428/444?text=?'}" alt="${(i.name||'').replace(/"/g,'&quot;')}" loading="lazy">
       <div>
         <div class="sr-pname">${i.name||''}</div>
         <div class="sr-pdept">${i.known_for_department||'Actor'}</div>
@@ -1921,5 +1929,27 @@ if(_si){
 }
 window.addEventListener('popstate',()=>{if(S.searchOpen)closeSearch();});
 </script>
+
+<!-- ✅ FIX 3: Service Worker registration — enables PWA install prompt -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        console.log('[MzCinema] SW registered, scope:', reg.scope);
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[MzCinema] New SW installed, update available');
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[MzCinema] SW registration failed:', err));
+  });
+}
+</script>
+
 </body>
 </html>
