@@ -1,11 +1,13 @@
 {
   "name": "Mz Cinema",
   "short_name": "Mz Cinema",
-  "start_url": "/Mz_Cinema/",
+  "description": "Mz Cinema – Stream movies and series",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
   "orientation": "portrait",
+  "background_color": "#08080f",
+  "theme_color": "#08080f",
   "icons": [
     {
       "src": "icon.png",
